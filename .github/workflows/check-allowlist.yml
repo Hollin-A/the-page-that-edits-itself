@@ -3,13 +3,13 @@ name: Check allowlist
 on:
   pull_request:
     branches: [main]
-    # Only run on agent-opened branches — human dev PRs are unaffected
-    head-branch: ['agent/**']
 
 jobs:
   allowlist:
     name: Verify only permitted files changed
     runs-on: ubuntu-latest
+    # Only enforce on agent-opened branches — human dev PRs are unaffected
+    if: startsWith(github.head_ref, 'agent/')
     steps:
       - uses: actions/checkout@v4
         with:
