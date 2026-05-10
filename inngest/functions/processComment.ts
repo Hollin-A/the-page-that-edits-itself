@@ -122,12 +122,12 @@ export const processComment = inngest.createFunction(
     })
 
     // Step 6: Mark deployed
-    await step.run('mark-deployed', async () => {
+    await step.run('mark-merged', async () => {
       const layer = patch.name === 'update_content' ? 'content' : 'theme'
       await supabase
         .from('comments')
         .update({
-          status: 'deployed',
+          status: 'merged',
           patch,
           pr_url: prUrl,
           reasoning: `Routed to ${layer} layer. Target: ${comment.edit_id}.`,
@@ -135,6 +135,6 @@ export const processComment = inngest.createFunction(
         .eq('id', commentId)
     })
 
-    return { deployed: true, pr_url: prUrl }
+    return { merged: true, pr_url: prUrl }
   }
 )

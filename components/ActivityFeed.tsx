@@ -8,7 +8,7 @@ const STATUS_LABEL: Record<Comment['status'], string> = {
   queued: 'Queued',
   moderating: 'Moderating',
   generating: 'Generating',
-  deployed: 'Deployed',
+  merged: 'Merged — deploying',
   rejected: 'Rejected',
 }
 
@@ -16,7 +16,7 @@ const STATUS_COLOR: Record<Comment['status'], string> = {
   queued: 'text-neutral-400',
   moderating: 'text-yellow-500',
   generating: 'text-blue-500',
-  deployed: 'text-green-500',
+  merged: 'text-green-500',
   rejected: 'text-red-400',
 }
 
@@ -24,7 +24,7 @@ const STATUS_DOT: Record<Comment['status'], string> = {
   queued: 'bg-neutral-300',
   moderating: 'bg-yellow-400',
   generating: 'bg-blue-400 animate-pulse',
-  deployed: 'bg-green-400',
+  merged: 'bg-green-400 animate-pulse',
   rejected: 'bg-red-400',
 }
 
