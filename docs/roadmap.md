@@ -44,6 +44,8 @@ Built on top of v0 once the prototype is validated. Order reflects priority.
 
 ## Later / open questions
 
+- **Vercel deploy webhook** — POST to an API route when a deployment completes; update the comment row status from `merged` to `deployed` so the activity feed reflects the true live state. Currently the feed shows "Merged — deploying" because the pipeline has no signal for when Vercel finishes.
+- **Live page content refresh** — page content (`hero.json`, `tokens.json`) is statically generated at build time; visitors must refresh to see agent changes after a Vercel redeploy. Options: ISR (`revalidate` on the fetch) or moving content to Supabase and reading at runtime. The activity feed already updates live; this gap is in the page content itself.
 - Portfolio teaser integration — a small scoped version embedded on a separate portfolio site
 - GHAW hybrid for the PR step — adds defence-in-depth if the project gets serious attention
 - PostHog for product analytics — optional, decide based on whether traffic data is useful
