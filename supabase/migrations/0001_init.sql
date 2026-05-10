@@ -29,6 +29,10 @@ create trigger comments_updated_at
 -- Enable Realtime so the activity feed receives live updates
 alter publication supabase_realtime add table comments;
 
+-- Disable RLS — comments is publicly writable by design,
+-- rate_limits is internal server-only. Both accessed via service role.
+alter table comments disable row level security;
+
 -- Rate limits table
 -- Tracks per-IP submission counts within a rolling window
 create table rate_limits (
@@ -36,3 +40,5 @@ create table rate_limits (
   count int not null default 0,
   window_start timestamptz not null default now()
 );
+
+alter table rate_limits disable row level security;
