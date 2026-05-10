@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { createBrowserClient } from '@/lib/supabase'
+import { createBrowserClient } from '@/lib/supabase-browser'
 import type { Comment } from '@/lib/schemas'
 
 const STATUS_LABEL: Record<Comment['status'], string> = {
