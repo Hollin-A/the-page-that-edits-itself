@@ -169,6 +169,151 @@ Validate the full system works in production, not just local dev.
 
 ---
 
-## Done
+## v0 Done
 
-When Phase 7 passes, v0 is complete. Every architectural assumption from `docs/architecture.md` has been validated in production. The next step is v1 — see `docs/roadmap.md`.
+When Phase 7 passes, v0 is complete. Every architectural assumption from `docs/architecture.md` has been validated in production.
+
+---
+
+---
+
+# v1 — Full system
+
+---
+
+## Phase 8 — Override layer
+
+Add a third editable layer for CSS and layout overrides, alongside the existing content and theme layers.
+
+**Tasks:**
+- Create `overrides/index.json` with an initial set of overrideable properties (e.g. `heroFontSize`, `heroFontWeight`, `heroPadding`)
+- Add `OverridesSchema` to `lib/schemas.ts` — validates the shape of `overrides/index.json`
+- Add `UpdateOverrideTool` to `lib/schemas.ts` — Anthropic tool definition for override edits
+- Register `UpdateOverrideTool` in `inngest/functions/processComment.ts` alongside the existing two tools
+- Add `update_override` branch to the validate-patch and create-pr steps
+- Add `overrides/index.json` to the CI allowlist in `.github/workflows/check-allowlist.yml`
+- Apply override tokens as CSS variables in `app/page.tsx` alongside the existing accent token
+- Wrap relevant elements with `EditableElement` using `override.*` edit IDs
+
+**Checkpoint:**
+- Submit a suggestion targeting an override element → agent selects `UpdateOverrideTool` instead of content or theme tools
+- PR modifies `overrides/index.json` only → CI allowlist passes
+- Submit suggestions targeting all three layers in sequence → agent routes each to the correct tool
+- Invalid override value (e.g. `heroFontSize: "large"` instead of a valid CSS value) → validate-patch step throws, no PR opened
+
+---
+
+## Phase 9 — X-ray view
+
+A toggleable overlay that makes the editable surface and pipeline state legible at a glance.
+
+**Tasks:**
+- Add x-ray toggle state to a client-side context provider (`components/XRayProvider.tsx`)
+- Three entry points that activate x-ray mode: ambient pill button (bottom-right corner), `⌘.` keyboard shortcut, and clicking any item in the activity feed
+- When active, overlay each `EditableElement` with its `data-edit-id` label and a comment count badge
+- Show a pipeline sidebar listing recent comments with status, routing reasoning, and PR link for each
+- Add deep-link support: `?xray=<edit-id>` opens x-ray mode with that element highlighted on page load
+- Ensure x-ray mode is dismissed by pressing `Escape` or clicking outside the sidebar
+
+**Checkpoint:**
+- `⌘.` toggles x-ray overlay; all three editable elements show their `data-edit-id` labels
+- Clicking a feed item opens x-ray mode focused on the relevant element
+- Navigating to `?xray=hero.title` opens x-ray mode with hero.title highlighted
+- Pressing `Escape` dismisses x-ray mode
+- No layout shift or console errors when toggling
+
+---
+
+## Phase 10 — Voting
+
+Let visitors vote on pending suggestions to influence processing order.
+
+**Tasks:**
+- Add `votes` table to Supabase: `id`, `comment_id` (FK to comments), `ip_hash`, `created_at`
+- Add unique constraint on `(comment_id, ip_hash)` to prevent duplicate votes
+- Create `app/api/vote/route.ts`: validate comment ID, hash IP, upsert vote row, return updated count
+- Update `ActivityFeed.tsx` to show a vote button and count on queued/moderating comments
+- Update Inngest `processComment` to order the queue by vote count when multiple comments are pending (highest votes processed first)
+
+**Checkpoint:**
+- Vote on a queued comment → count increments in the feed in real time
+- Vote twice from the same IP → second vote is rejected (409)
+- Two comments queued simultaneously → higher-voted one is processed first
+- Voting on a deployed or rejected comment → returns 400
+
+---
+
+## Phase 11 — Conflict detection + decision windows
+
+Prevent two agent edits from overwriting each other on the same target.
+
+**Tasks:**
+- On comment submission, check if another comment targeting the same `edit_id` is already in `queued` or `moderating` state
+- If a conflict exists, set both to `status: 'contested'` and record a `decision_deadline` (e.g. 10 minutes from now)
+- Add a `contested` status to `CommentSchema` and `ActivityFeed` display
+- After the decision window expires, an Inngest scheduled function picks the higher-voted comment, sets it back to `queued`, and rejects the other with `reasoning: 'Lost conflict vote'`
+- If votes are tied, pick the earlier submission
+
+**Checkpoint:**
+- Submit two comments targeting `hero.title` in quick succession → both show `contested` in the feed
+- Vote on one → after the decision window, the higher-voted one proceeds, the other is rejected
+- Submit two comments targeting different elements → no conflict, both proceed independently
+- Tie-break: earlier submission wins
+
+---
+
+## Phase 12 — Live page content refresh
+
+Remove the manual-refresh requirement after an agent deployment.
+
+**Tasks:**
+- Add `export const revalidate = 60` to `app/page.tsx` to enable ISR with a 60-second window
+- Verify `hero.json` and `tokens.json` are read via `fs` (static import) — confirm Next.js treats them as data dependencies that trigger revalidation on rebuild
+- Test that after a Vercel deployment, the page reflects new content within 60 seconds without a manual refresh
+
+**Checkpoint:**
+- Submit a comment → agent merges PR → Vercel redeploys → page content updates within ~60 seconds without a manual refresh
+- A second browser tab open during the deployment picks up the new content on next background revalidation
+
+---
+
+## Phase 13 — OAuth login
+
+Replace anonymous submissions with attributed ones.
+
+**Tasks:**
+- Add `next-auth` with GitHub and Google providers
+- Add `user_id` and `user_name` columns to the `comments` table (nullable for legacy anonymous rows)
+- Gate the comment submission API: logged-in users get a higher rate limit (e.g. 20/hour vs 3/hour for anonymous)
+- Show avatar and username in the activity feed for attributed comments
+- Send a notification (email or GitHub) when a logged-in user's suggestion goes live
+
+**Checkpoint:**
+- Sign in with GitHub → submit a comment → row in Supabase includes `user_id` and `user_name`
+- Logged-in user submits 5 comments in an hour → all accepted (higher rate limit)
+- Anonymous user submits 4 comments in an hour → 4th is rejected with 429
+- User whose suggestion deploys receives a notification
+
+---
+
+## Phase 14 — Owner ops panel
+
+Operational controls for the site owner.
+
+**Tasks:**
+- Create a protected route `app/admin/page.tsx` — accessible only to a hardcoded owner email (from env)
+- Moderation queue view: list all `queued` and `moderating` comments with manual approve/reject controls
+- Kill switch: env-gated flag that halts the Inngest pipeline before the generate-patch step
+- Spend cap display: read from Anthropic API usage endpoint and display current daily spend vs cap
+- Ban controls: add `banned_ips` table; check it in the comment submission API before inserting
+
+**Checkpoint:**
+- Owner manually rejects a queued comment → status updates to `rejected`, pipeline does not proceed
+- Kill switch enabled → new comments are stored but pipeline halts at generate-patch
+- Banned IP submits a comment → 429 returned immediately, no row inserted
+
+---
+
+## v1 Done
+
+When Phase 14 passes, v1 is complete. The system is production-ready with attribution, conflict resolution, operator controls, and a fully legible editing surface.
