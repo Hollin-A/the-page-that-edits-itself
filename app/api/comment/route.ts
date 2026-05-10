@@ -26,15 +26,17 @@ export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown'
   const ip_hash = createHash('sha256').update(ip).digest('hex')
 
-  // Rate limit: max 3 submissions per IP per hour
-  const { count } = await supabase
-    .from('comments')
-    .select('*', { count: 'exact', head: true })
-    .eq('ip_hash', ip_hash)
-    .gte('created_at', new Date(Date.now() - RATE_WINDOW_MS).toISOString())
+  // Rate limit: max 3 submissions per IP per hour — skipped in development
+  if (process.env.NODE_ENV !== 'development') {
+    const { count } = await supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('ip_hash', ip_hash)
+      .gte('created_at', new Date(Date.now() - RATE_WINDOW_MS).toISOString())
 
-  if ((count ?? 0) >= RATE_LIMIT) {
-    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+    if ((count ?? 0) >= RATE_LIMIT) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+    }
   }
 
   const { data, error } = await supabase
