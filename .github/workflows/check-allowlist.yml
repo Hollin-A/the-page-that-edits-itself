@@ -1,0 +1,51 @@
+name: Check allowlist
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  allowlist:
+    name: Verify only permitted files changed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed
+        run: |
+          git fetch origin main
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Check against allowlist
+        run: |
+          ALLOWLIST="content/hero.json theme/tokens.json"
+          FAILED=0
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            ALLOWED=0
+            for permitted in $ALLOWLIST; do
+              if [ "$file" = "$permitted" ]; then
+                ALLOWED=1
+                break
+              fi
+            done
+            if [ "$ALLOWED" -eq 0 ]; then
+              echo "::error::Disallowed file changed: $file"
+              FAILED=1
+            fi
+          done <<< "${{ steps.changed.outputs.files }}"
+          if [ "$FAILED" -eq 1 ]; then
+            echo ""
+            echo "Only the following files may be changed by agent PRs:"
+            for permitted in $ALLOWLIST; do
+              echo "  - $permitted"
+            done
+            exit 1
+          fi
+          echo "All changed files are within the allowlist."
