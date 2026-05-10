@@ -8,14 +8,20 @@ jobs:
   allowlist:
     name: Verify only permitted files changed
     runs-on: ubuntu-latest
-    # Only enforce on agent-opened branches — human dev PRs are unaffected
-    if: startsWith(github.head_ref, 'agent/')
     steps:
+      - name: Skip if not an agent branch
+        if: "!startsWith(github.head_ref, 'agent/')"
+        run: |
+          echo "Not an agent branch — allowlist check skipped."
+          exit 0
+
       - uses: actions/checkout@v4
+        if: startsWith(github.head_ref, 'agent/')
         with:
           fetch-depth: 0
 
       - name: Get changed files
+        if: startsWith(github.head_ref, 'agent/')
         id: changed
         run: |
           git fetch origin main
@@ -25,6 +31,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Check against allowlist
+        if: startsWith(github.head_ref, 'agent/')
         run: |
           ALLOWLIST="content/hero.json theme/tokens.json"
           FAILED=0
