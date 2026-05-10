@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+type Status = 'idle' | 'submitting' | 'success' | 'error'
+
 export default function CommentPopover({
   editId,
   onClose,
@@ -12,6 +14,35 @@ export default function CommentPopover({
   position: { top: number; right: number }
 }) {
   const [text, setText] = useState('')
+  const [status, setStatus] = useState<Status>('idle')
+
+  const submit = async () => {
+    if (!text.trim() || status === 'submitting') return
+    setStatus('submitting')
+    try {
+      const res = await fetch('/api/comment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ edit_id: editId, text: text.trim() }),
+      })
+      if (res.status === 429) {
+        setStatus('error')
+        return
+      }
+      if (!res.ok) throw new Error()
+      setStatus('success')
+      setTimeout(onClose, 1200)
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      submit()
+    }
+  }
 
   return (
     <div
@@ -25,30 +56,46 @@ export default function CommentPopover({
         </span>
         <span>your suggestion will be moderated</span>
       </div>
-      <textarea
-        autoFocus
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="What should change? e.g. 'make this punchier' or 'try a deeper color'"
-        className="w-full min-h-[72px] text-sm text-neutral-800 placeholder:text-neutral-400 border border-neutral-200 rounded-lg p-2.5 resize-none outline-none bg-neutral-50 focus:border-orange-400 focus:bg-white"
-      />
-      <div className="flex justify-between items-center mt-2">
-        <span className="text-xs text-neutral-400">Enter to submit · Esc to cancel</span>
-        <div className="flex gap-2">
-          <button
-            onClick={onClose}
-            className="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50"
-          >
-            Cancel
-          </button>
-          <button
-            disabled={!text.trim()}
-            className="text-xs px-3 py-1.5 rounded-lg bg-orange-500 text-white disabled:opacity-40 hover:bg-orange-600"
-          >
-            Suggest →
-          </button>
-        </div>
-      </div>
+
+      {status === 'success' ? (
+        <p className="text-sm text-green-600 py-4 text-center">
+          Suggestion submitted ✓
+        </p>
+      ) : (
+        <>
+          <textarea
+            autoFocus
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="What should change? e.g. 'make this punchier' or 'try a deeper color'"
+            className="w-full min-h-[72px] text-sm text-neutral-800 placeholder:text-neutral-400 border border-neutral-200 rounded-lg p-2.5 resize-none outline-none bg-neutral-50 focus:border-orange-400 focus:bg-white"
+          />
+          {status === 'error' && (
+            <p className="text-xs text-red-500 mt-1">
+              Could not submit — you may have hit the rate limit.
+            </p>
+          )}
+          <div className="flex justify-between items-center mt-2">
+            <span className="text-xs text-neutral-400">Enter to submit · Esc to cancel</span>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submit}
+                disabled={!text.trim() || status === 'submitting'}
+                className="text-xs px-3 py-1.5 rounded-lg bg-orange-500 text-white disabled:opacity-40 hover:bg-orange-600"
+              >
+                {status === 'submitting' ? '…' : 'Suggest →'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
