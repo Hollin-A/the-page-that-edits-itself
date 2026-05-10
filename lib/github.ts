@@ -27,6 +27,9 @@ export async function commitAndOpenPR(input: {
     ref: 'heads/main',
   })
 
+  // Delete branch if it already exists (makes the step safe to retry)
+  await octokit.git.deleteRef({ owner, repo, ref: `heads/${branch}` }).catch(() => {})
+
   // Create agent branch
   await octokit.git.createRef({
     owner,
