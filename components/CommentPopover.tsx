@@ -5,14 +5,20 @@ import { useState } from 'react'
 export default function CommentPopover({
   editId,
   onClose,
+  position,
 }: {
   editId: string
   onClose: () => void
+  position: { top: number; right: number }
 }) {
   const [text, setText] = useState('')
 
   return (
-    <div className="absolute z-50 top-6 right-0 w-80 bg-white border border-neutral-200 rounded-xl shadow-lg p-3">
+    <div
+      className="fixed z-50 w-80 bg-white border border-neutral-200 rounded-xl shadow-lg p-3"
+      style={{ top: position.top, right: position.right }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
       <div className="flex items-center gap-2 pb-2 mb-2 border-b border-neutral-100 text-xs text-neutral-400">
         <span className="bg-orange-50 text-orange-600 font-mono px-2 py-0.5 rounded">
           {editId}
@@ -24,14 +30,14 @@ export default function CommentPopover({
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="What should change? e.g. 'make this punchier' or 'try a deeper color'"
-        className="w-full min-h-[72px] text-sm border border-neutral-200 rounded-lg p-2.5 resize-none outline-none bg-neutral-50 focus:border-orange-400 focus:bg-white"
+        className="w-full min-h-[72px] text-sm text-neutral-800 placeholder:text-neutral-400 border border-neutral-200 rounded-lg p-2.5 resize-none outline-none bg-neutral-50 focus:border-orange-400 focus:bg-white"
       />
       <div className="flex justify-between items-center mt-2">
         <span className="text-xs text-neutral-400">Enter to submit · Esc to cancel</span>
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-50"
+            className="text-xs px-3 py-1.5 rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50"
           >
             Cancel
           </button>

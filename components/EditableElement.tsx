@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, ElementType, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import CommentPopover from './CommentPopover'
 
 const ChatIcon = () => (
@@ -21,7 +22,9 @@ export default function EditableElement({
   className?: string
 }) {
   const [open, setOpen] = useState(false)
+  const [popoverPos, setPopoverPos] = useState({ top: 0, right: 0 })
   const ref = useRef<HTMLElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const Tag = tag
 
   useEffect(() => {
@@ -39,6 +42,14 @@ export default function EditableElement({
     }
   }, [])
 
+  const handleOpen = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setPopoverPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right })
+    }
+    setOpen((v) => !v)
+  }
+
   return (
     <Tag
       ref={ref}
@@ -47,13 +58,17 @@ export default function EditableElement({
     >
       {children}
       <button
-        onClick={() => setOpen((v) => !v)}
+        ref={buttonRef}
+        onClick={handleOpen}
         aria-label={`Suggest a change to ${editId}`}
         className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-white border border-neutral-300 hidden group-hover:flex items-center justify-center shadow-sm hover:bg-[var(--accent)] hover:text-white hover:border-[var(--accent)] text-neutral-400 transition-colors z-10"
       >
         <ChatIcon />
       </button>
-      {open && <CommentPopover editId={editId} onClose={() => setOpen(false)} />}
+      {open && createPortal(
+        <CommentPopover editId={editId} onClose={() => setOpen(false)} position={popoverPos} />,
+        document.body
+      )}
     </Tag>
   )
 }
