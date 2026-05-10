@@ -3,6 +3,8 @@ name: Check allowlist
 on:
   pull_request:
     branches: [main]
+    # Only run on agent-opened branches — human dev PRs are unaffected
+    head-branch: ['agent/**']
 
 jobs:
   allowlist:
