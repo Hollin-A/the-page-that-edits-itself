@@ -66,13 +66,15 @@ export async function commitAndOpenPR(input: {
     body: `**Suggestion:** ${input.commentText}\n**Target:** \`${input.editId}\`\n**Layer:** ${input.toolName === 'update_content' ? 'content' : 'theme'}`,
   })
 
-  // Auto-merge
-  await octokit.pulls.merge({
-    owner,
-    repo,
-    pull_number: pr.number,
-    merge_method: 'squash',
-  })
+  // Enable auto-merge — GitHub merges once all required checks pass
+  await octokit.graphql(
+    `mutation EnableAutoMerge($id: ID!) {
+      enablePullRequestAutoMerge(input: { pullRequestId: $id, mergeMethod: SQUASH }) {
+        pullRequest { number }
+      }
+    }`,
+    { id: pr.node_id }
+  )
 
   return pr.html_url
 }
