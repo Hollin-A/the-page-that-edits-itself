@@ -15,6 +15,8 @@ export default function Page() {
   const tokens = readJson<ThemeTokens>('theme/tokens.json')
   const overrides = readJson<Overrides>('overrides/index.json')
   return (
+    <>
+      <style>{`:root { --accent: ${tokens.accent}; }`}</style>
     <main
       style={{
         '--accent': tokens.accent,
@@ -72,5 +74,6 @@ export default function Page() {
 
       </div>
     </main>
+    </>
   )
 }

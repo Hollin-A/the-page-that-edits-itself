@@ -52,7 +52,10 @@ export default function EditableElement({
   const handleOpen = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
-      setPopoverPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right })
+      setPopoverPos({
+        top: rect.bottom + window.scrollY + 8,
+        right: Math.max(8, window.innerWidth - rect.right - window.scrollX),
+      })
     }
     setOpen((v) => !v)
   }
