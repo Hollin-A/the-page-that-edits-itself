@@ -1,10 +1,19 @@
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import ActivityFeed from '@/components/ActivityFeed'
 import EditableElement from '@/components/EditableElement'
-import hero from '@/content/hero.json'
-import tokens from '@/theme/tokens.json'
-import overrides from '@/overrides/index.json'
+import type { HeroContent, ThemeTokens, Overrides } from '@/lib/schemas'
+
+export const revalidate = 60
+
+function readJson<T>(relativePath: string): T {
+  return JSON.parse(readFileSync(join(process.cwd(), relativePath), 'utf8')) as T
+}
 
 export default function Page() {
+  const hero = readJson<HeroContent>('content/hero.json')
+  const tokens = readJson<ThemeTokens>('theme/tokens.json')
+  const overrides = readJson<Overrides>('overrides/index.json')
   return (
     <main
       style={{
