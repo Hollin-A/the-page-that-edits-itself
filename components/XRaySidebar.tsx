@@ -106,7 +106,7 @@ export default function XRaySidebar() {
                       />
                     )}
                     <span className="text-[11px] text-neutral-400">
-                      {c.user_name ? `github:${c.user_name}` : 'anon'}
+                      {c.user_name ? `github:${c.user_name}` : 'anonymous'}
                     </span>
                   </div>
                   {c.reasoning && (
