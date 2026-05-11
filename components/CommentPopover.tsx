@@ -55,35 +55,38 @@ export default function CommentPopover({
 
   return (
     <div
-      className="fixed z-50 w-80 bg-white border border-neutral-200 rounded-xl shadow-lg p-3"
+      className="fixed z-50 w-96 bg-white border border-neutral-200 rounded-xl shadow-lg p-3"
       style={{ top: position.top, right: position.right }}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-neutral-100">
-        <div className="flex items-center gap-2 text-xs text-neutral-400">
-          <span className="bg-orange-50 text-orange-600 font-mono px-2 py-0.5 rounded">
+      {/* Header row — two independent halves, each capped so neither pushes the other off */}
+      <div className="flex items-center gap-2 pb-2 mb-2 border-b border-neutral-100 min-w-0">
+        <div className="flex items-center gap-2 text-xs text-neutral-400 min-w-0 flex-1">
+          <span className="bg-[var(--accent)]/10 text-[var(--accent)] font-mono px-2 py-0.5 rounded shrink-0">
             {editId}
           </span>
-          <span>suggestion will be moderated</span>
+          <span className="truncate">suggestion will be moderated</span>
         </div>
         {user ? (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             {user.image && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.image} alt="" className="w-5 h-5 rounded-full" />
             )}
-            <span className="text-xs text-neutral-500 font-medium">{user.login ?? user.name}</span>
+            <span className="text-xs text-neutral-500 font-medium max-w-[80px] truncate">
+              {user.login ?? user.name}
+            </span>
             <button
               onClick={() => signOut()}
-              className="text-[10px] text-neutral-400 hover:text-neutral-600 ml-0.5"
+              className="text-[10px] text-neutral-400 hover:text-neutral-600 shrink-0"
             >
-              ·&nbsp;sign out
+              · sign out
             </button>
           </div>
         ) : (
           <button
             onClick={() => signIn('github')}
-            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-800 border border-neutral-200 rounded-lg px-2 py-1 hover:bg-neutral-50 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-800 border border-neutral-200 rounded-lg px-2 py-1 hover:bg-neutral-50 transition-colors shrink-0"
           >
             <GitHubIcon />
             Sign in
@@ -109,7 +112,7 @@ export default function CommentPopover({
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="What should change? e.g. 'make this punchier' or 'try a deeper color'"
-            className="w-full min-h-[72px] text-sm text-neutral-800 placeholder:text-neutral-400 border border-neutral-200 rounded-lg p-2.5 resize-none outline-none bg-neutral-50 focus:border-orange-400 focus:bg-white"
+            className="w-full min-h-[72px] text-sm text-neutral-800 placeholder:text-neutral-400 border border-neutral-200 rounded-lg p-2.5 resize-none outline-none bg-neutral-50 focus:border-[var(--accent)] focus:bg-white"
           />
           {status === 'error' && (
             <p className="text-xs text-red-500 mt-1">
@@ -117,7 +120,7 @@ export default function CommentPopover({
             </p>
           )}
           <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-neutral-400">Enter to submit · Esc to cancel</span>
+            <span className="text-xs text-neutral-400">Enter · Esc to cancel</span>
             <div className="flex gap-2">
               <button
                 onClick={onClose}
@@ -128,7 +131,7 @@ export default function CommentPopover({
               <button
                 onClick={submit}
                 disabled={!text.trim() || status === 'submitting'}
-                className="text-xs px-3 py-1.5 rounded-lg bg-orange-500 text-white disabled:opacity-40 hover:bg-orange-600"
+                className="text-xs px-3 py-1.5 rounded-lg bg-[var(--accent)] text-white disabled:opacity-40 hover:opacity-90 whitespace-nowrap min-w-[80px] text-center"
               >
                 {status === 'submitting' ? '…' : 'Suggest →'}
               </button>
