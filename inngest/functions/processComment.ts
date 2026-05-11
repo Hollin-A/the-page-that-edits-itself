@@ -56,6 +56,22 @@ export const processComment = inngest.createFunction(
       return data
     })
 
+    // Step 1b: Kill switch check — halt before any API spend
+    await step.run('check-kill-switch', async () => {
+      const { data } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'kill_switch')
+        .single()
+      if (data?.value === 'true') {
+        await supabase
+          .from('comments')
+          .update({ status: 'failed', reasoning: 'Pipeline halted by kill switch.' })
+          .eq('id', commentId)
+        throw new Error('Kill switch is active — pipeline halted.')
+      }
+    })
+
     // Step 2: Moderation — cheap pass with Haiku
     const moderation = await step.run('moderate', async () => {
       await supabase.from('comments').update({ status: 'moderating' }).eq('id', commentId)

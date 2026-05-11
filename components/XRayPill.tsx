@@ -1,9 +1,13 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useXRay } from './XRayProvider'
 
 export default function XRayPill() {
   const { active, toggle, comments, panelOpen, openPanel, closePanel } = useXRay()
+  const pathname = usePathname()
+
+  if (pathname.startsWith('/admin')) return null
 
   const inQueue = comments.filter((c) =>
     ['queued', 'moderating', 'generating'].includes(c.status)
