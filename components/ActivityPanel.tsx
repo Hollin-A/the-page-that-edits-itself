@@ -49,8 +49,8 @@ const STATUS_LABEL: Partial<Record<Comment['status'], string>> = {
 }
 
 const ROW_BORDER: Partial<Record<Comment['status'], string>> = {
-  rejected: 'border-l-2 border-red-400',
-  failed: 'border-l-2 border-orange-400',
+  rejected: 'border-l-2 border-l-red-400',
+  failed: 'border-l-2 border-l-orange-400',
 }
 
 export default function ActivityPanel() {
