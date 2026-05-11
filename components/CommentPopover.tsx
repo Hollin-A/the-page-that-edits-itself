@@ -55,7 +55,7 @@ export default function CommentPopover({
 
   return (
     <div
-      className="fixed z-50 w-96 bg-white border border-neutral-200 rounded-xl shadow-lg p-3"
+      className="absolute z-50 w-96 bg-white border border-neutral-200 rounded-xl shadow-lg p-3"
       style={{ top: position.top, right: position.right }}
       onMouseDown={(e) => e.stopPropagation()}
     >
