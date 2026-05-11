@@ -3,13 +3,15 @@ import { createHash } from 'crypto'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 import { inngest } from '@/inngest/client'
+import { auth } from '@/auth'
 
 const SubmitSchema = z.object({
   edit_id: z.string().min(1).max(80),
   text: z.string().min(1).max(500),
 })
 
-const RATE_LIMIT = parseInt(process.env.RATE_LIMIT_PER_HOUR ?? '3', 10)
+const ANON_RATE_LIMIT = parseInt(process.env.RATE_LIMIT_PER_HOUR ?? '3', 10)
+const AUTHED_RATE_LIMIT = 20
 const RATE_WINDOW_MS = 60 * 60 * 1000 // 1 hour
 
 export async function POST(req: Request) {
@@ -23,18 +25,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
+  const session = await auth()
+  const sessionUser = session?.user as { login?: string; githubId?: string } | undefined
+  const isAuthed = !!sessionUser?.githubId
+
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown'
   const ip_hash = createHash('sha256').update(ip).digest('hex')
 
-  // Rate limit: max 3 submissions per IP per hour — skipped in development
+  // Authenticated users get 20/hr; anonymous users get RATE_LIMIT_PER_HOUR (default 3/hr).
+  // Rate limiting is skipped in development.
   if (process.env.NODE_ENV !== 'development') {
+    const rateLimit = isAuthed ? AUTHED_RATE_LIMIT : ANON_RATE_LIMIT
     const { count } = await supabase
       .from('comments')
       .select('*', { count: 'exact', head: true })
       .eq('ip_hash', ip_hash)
       .gte('created_at', new Date(Date.now() - RATE_WINDOW_MS).toISOString())
 
-    if ((count ?? 0) >= RATE_LIMIT) {
+    if ((count ?? 0) >= rateLimit) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
   }
@@ -62,6 +70,8 @@ export async function POST(req: Request) {
       edit_id: parsed.data.edit_id,
       text: parsed.data.text,
       ip_hash,
+      user_id: sessionUser?.githubId ?? null,
+      user_name: sessionUser?.login ?? null,
     })
     .select()
     .single()
