@@ -8,7 +8,6 @@ export default function XRayPill() {
   return (
     <button
       onClick={toggle}
-      onMouseDown={(e) => e.stopPropagation()}
       title="Toggle X-Ray mode (⌘.)"
       className={`fixed bottom-6 right-6 z-50 px-4 py-2 rounded-full text-xs font-semibold shadow-lg transition-all select-none ${
         active

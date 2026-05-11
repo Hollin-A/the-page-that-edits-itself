@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useXRay } from './XRayProvider'
 import type { Comment } from '@/lib/schemas'
@@ -32,17 +32,6 @@ const STATUS_DOT: Record<Comment['status'], string> = {
 export default function XRaySidebar() {
   const { active, focusedId, comments, activate, deactivate } = useXRay()
   const sidebarRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!active) return
-    const handleMouseDown = (e: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
-        deactivate()
-      }
-    }
-    document.addEventListener('mousedown', handleMouseDown)
-    return () => document.removeEventListener('mousedown', handleMouseDown)
-  }, [active, deactivate])
 
   if (!active) return null
 
@@ -112,7 +101,7 @@ export default function XRaySidebar() {
       </div>
 
       <div className="px-5 py-3 border-t border-neutral-100">
-        <p className="text-xs text-neutral-400">Press Esc to close</p>
+        <p className="text-xs text-neutral-400">Esc or ⌘. to close</p>
       </div>
     </div>
   )
