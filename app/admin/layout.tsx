@@ -32,7 +32,7 @@ const NAV = [
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex bg-[#F7F7F5] font-sans">
+    <div className="min-h-screen flex bg-[#08080C] font-sans">
       {/* Sidebar */}
       <aside className="w-60 shrink-0 bg-[#14141A] text-white flex flex-col min-h-screen fixed top-0 left-0 h-full">
         <div className="px-5 py-5 border-b border-white/10">

@@ -6,7 +6,8 @@ export default function LinkBlockSection({ text, href }: LinkBlockSection) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 text-[var(--accent)] font-medium hover:underline underline-offset-4 transition-colors"
+      className="inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-75"
+      style={{ color: 'var(--accent)' }}
     >
       {text}
     </a>
