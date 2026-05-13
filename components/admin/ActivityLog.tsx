@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createBrowserClient } from '@/lib/supabase-browser'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import type { Comment } from '@/lib/schemas'
 
 type Filter = 'all' | 'active' | 'merged' | 'rejected'
@@ -52,7 +52,7 @@ function matchesFilter(c: Comment, filter: Filter): boolean {
 export default function ActivityLog({ initial }: { initial: Comment[] }) {
   const [comments, setComments] = useState<Comment[]>(initial)
   const [filter, setFilter] = useState<Filter>('all')
-  const supabase = useRef(createBrowserClient())
+  const supabase = useRef(supabaseBrowser)
 
   useEffect(() => {
     const client = supabase.current
