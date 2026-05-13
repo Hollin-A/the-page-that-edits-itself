@@ -362,3 +362,161 @@ Operational controls for the site owner, accessed at a separate URL. There is no
 ## v1 Done
 
 Phases 8–14 complete. The system is production-ready with attribution, element locking, a floating activity surface, and a private operator dashboard.
+
+---
+
+---
+
+# v2 — Section list model + hardening
+
+---
+
+## Phase 15 — Schemas
+
+Replace the fixed-shape content schemas with a discriminated-union section list model. This is the data foundation for everything in v2 — no UI or rendering changes yet.
+
+**Tasks:**
+- Rewrite `lib/schemas.ts`:
+  - Remove `HeroContentSchema`, `OverridesSchema`, `UpdateContentTool`, `UpdateOverrideTool`
+  - Add `SectionBaseSchema` — `id` (slug regex), `visible` (boolean, default true)
+  - Add all 8 section type schemas extending the base: `HeadingSchema`, `ParagraphSchema`, `CalloutSchema`, `OrderedListSchema`, `BulletListSchema`, `CodeBlockSchema`, `LinkBlockSchema`, `QuoteSchema`
+  - Add `SectionSchema` — discriminated union on `type`
+  - Add `SectionsFileSchema` — `{ sections: SectionSchema[] }`, min 1, max 50
+  - Add `UpdateSectionsTool` — Anthropic tool definition; agent returns the complete sections array, never a diff
+  - Keep `ThemeTokensSchema` and `UpdateThemeTool` unchanged
+- Export TypeScript types derived from each schema (`z.infer<>`)
+
+**Checkpoint:**
+- All schemas import cleanly with no TypeScript errors
+- `.parse()` against a valid sections array passes for all 8 types
+- `.parse()` against an invalid section (wrong type literal, missing field, field over max length) throws with a clear error
+- Discriminated union correctly narrows: a `callout` object fails if it's missing `tone`
+
+---
+
+## Phase 16 — Static render
+
+Build the renderer components and wire up the page. No agent involvement yet — hand-crafted content only.
+
+**Tasks:**
+- Create `content/sections.json` with one hand-crafted example of every section type — this replaces `content/hero.json` and `content/overrides/index.json`
+- Create `components/sections/` directory with one component per type:
+  - `HeadingSection.tsx` — `level` drives h1/h2/h3
+  - `ParagraphSection.tsx`
+  - `CalloutSection.tsx` — `tone` drives styling (info / warn / success)
+  - `OrderedListSection.tsx`
+  - `BulletListSection.tsx`
+  - `CodeBlockSection.tsx` — styled `<pre>`, no syntax highlighting library yet
+  - `LinkBlockSection.tsx`
+  - `QuoteSection.tsx`
+- Create `components/sections/registry.ts` — maps type strings to renderer components
+- Rewrite `app/page.tsx` — loop over `sections`, filter `visible`, wrap each in `EditableElement` with `editId={section.${section.id}}`
+- Remove old hero/override rendering from `app/page.tsx`
+- Update CI allowlist (`.github/workflows/check-allowlist.yml`) — replace `content/hero.json` and `overrides/index.json` with `content/sections.json`
+
+**Checkpoint:**
+- Page renders every section type from `content/sections.json` without errors
+- All 8 section types display correctly (inspect each visually)
+- Hovering any section reveals the `EditableElement` comment affordance
+- Hidden sections (`visible: false`) are not rendered
+- CI allowlist: a test PR touching `content/sections.json` passes; one touching `app/page.tsx` fails
+- No TypeScript errors, no console errors
+
+---
+
+## Phase 17 — Pipeline rewire
+
+Replace the old tools with `update_sections` in the Inngest function. Full suggestion-to-PR cycle with the new content model.
+
+**Tasks:**
+- Update `inngest/functions/processComment.ts`:
+  - Replace `UpdateContentTool` + `UpdateOverrideTool` with `UpdateSectionsTool` in the generate-patch step
+  - Update validate-patch step to use `SectionsFileSchema`
+  - Update create-pr step to write `content/sections.json` (not `hero.json` or `overrides/index.json`)
+  - Update `edit_id` convention — sections use `section.{id}`; theme edits continue as `theme.accent`
+- Inject `docs/system-reference.md` content into the generate-patch system prompt so the agent has factual grounding when writing content about the system
+- Delete `lib/github.ts` helper references to the old file paths; update to `content/sections.json`
+
+**Checkpoint:**
+- Submit a text rewrite suggestion → PR opens with a correct diff against `content/sections.json`
+- Submit a structural suggestion ("split this into two paragraphs") → PR shows two sections where one existed
+- Submit a reorder suggestion → sections array in the PR diff reflects the new order
+- Submit a theme suggestion → agent uses `UpdateThemeTool`, not `UpdateSectionsTool`
+- Invalid patch (agent invents a new section type) → validate-patch step throws, no PR opened
+- Agent reasoning in the PR commit message and comment row reflects the system-reference content accurately
+
+---
+
+## Phase 18 — Security hardening
+
+All planned security features from `docs/security.md` ship in this phase.
+
+**Part A — Simple hardening (fast):**
+- Require GitHub sign-in: `app/api/comment/route.ts` returns 401 if no authenticated session. Add `ALLOW_ANONYMOUS=true` env var for local dev only
+- Honeypot field: add `<input name="website" className="hidden" tabIndex={-1} autoComplete="off" />` to `CommentPopover`. API route returns 200 silently but does not insert or trigger Inngest if the field is populated
+- Anthropic spend cap: set a monthly hard cap in the Anthropic console (not a code change — document the required action)
+
+**Part B — Held-comment moderation queue (substantial):**
+- DB migration: add `held` to the `comment_status` enum; add `require_approval` key to the `settings` table (default `false`); add `patch` column to `comments` for storing the generated patch as preview
+- Pipeline: add `check-hold` step in `processComment.ts` after `validate-patch` — checks `require_approval` setting; if held, stores patch + reasoning in the comment row, marks status `held`, throws `NonRetriableError` (no PR opened)
+- Admin panel: add a **Held** tab to the activity log — each row shows target element, original suggestion text, generated patch as a diff view, agent reasoning, submitter, time in queue, Approve and Reject buttons
+- Approve server action: sends a new `comment/approved` Inngest event carrying only the `comment_id`; the pipeline re-runs `generate-patch` against current file state (not the stored patch), skipping the hold check (`approved: true` on the event); the stored patch is preview only
+- Reject server action: marks the comment `rejected`, no PR opened
+
+**Checkpoint:**
+- Anonymous submission attempt → returns 401
+- Honeypot field populated → returns 200, no Supabase row inserted, no Inngest event fired
+- Toggle `require_approval = true` in admin → submit a suggestion → comment lands in Held tab, no PR opened
+- Approve a held comment → pipeline re-runs generate-patch against current sections.json → PR opens and merges
+- Reject a held comment → row status becomes `rejected`, Held tab empties
+- Approve a held comment after another suggestion has already merged (stale patch scenario) → re-generated patch reflects current file state, not the stored preview
+
+---
+
+## Phase 19 — Deploy webhook
+
+Close the loop between merge and live deploy. Comments currently sit at `merged` indefinitely; this phase adds a true `deployed` status.
+
+**Tasks:**
+- Create `app/api/deploy-webhook/route.ts` — receives Vercel's deployment completion POST, verifies the webhook signature, identifies which branch/commit triggered the deployment, updates matching comment rows from `merged` to `deployed`
+- Add `deployed` to the `comment_status` enum (DB migration)
+- Update `ActivityPanel.tsx` and `XRaySidebar.tsx` to render `deployed` as a distinct final state (e.g. green check, "live" label) separate from `merged`
+- Configure the Vercel project to POST to `/api/deploy-webhook` on deployment success
+
+**Checkpoint:**
+- Full cycle ends with the comment row showing `deployed` (not `merged`) after Vercel finishes rebuilding
+- Activity panel shows the comment transitioning `merged → deployed` in real time
+- Webhook signature check: a POST with an invalid signature returns 401
+
+---
+
+## Phase 20 — Launch content + docs
+
+Write the deliberate public-facing content and refresh the documentation.
+
+**Tasks:**
+- Write the final `content/sections.json` — 8–10 sections:
+  1. Heading (h1) — page title
+  2. Paragraph — one-sentence elevator pitch
+  3. Ordered list — the 6-step pipeline
+  4. Callout (info) — the safety model / kill switch
+  5. Callout (warn) — what the agent cannot do (honest about limits)
+  6. Paragraph — what "structural edit" means, with a concrete example
+  7. Code block — example agent commit message format
+  8. Link block — link to the repo's open PRs
+- Add structural suggestion prompts to the page UI: *"Try: 'split this paragraph into three,' 'add a section about moderation,' 'put the list before the callout.'"*
+- Rewrite `docs/architecture.md` to reflect the section list model
+- Rewrite `README.md` as launch material — not a build journal
+- Archive `docs/development-plan.md` and `docs/next-project-guide.md` (artifacts of the prototype build, not relevant to the public repo)
+
+**Checkpoint:**
+- Page reads as a coherent, inviting explanation of the system to a first-time visitor
+- Structural suggestion prompts are visible and accurate
+- `architecture.md` matches the actual v2 implementation
+- `README.md` reads as launch copy, not internal notes
+
+---
+
+## v2 Done
+
+Phases 15–20 complete. The system supports structural page edits, a full held-comment moderation queue, GitHub-required attribution, a true deployed status signal, and deliberate launch content.
