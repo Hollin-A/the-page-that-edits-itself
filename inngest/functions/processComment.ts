@@ -1,17 +1,25 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { inngest } from '@/inngest/client'
 import { supabase } from '@/lib/supabase'
-import { ModerationResultSchema } from '@/lib/schemas'
-
-// ---------------------------------------------------------------------------
-// NOTE: This file is transitional — Phase 15/16 stubs.
-// The generate-patch, validate-patch, and create-pr steps reference the old
-// content model (hero.json, overrides, UpdateContentTool, etc.) which has been
-// removed. Those steps throw until Phase 17 rewires them to UpdateSectionsTool.
-// Kill switch, moderation, and reject flow are fully functional.
-// ---------------------------------------------------------------------------
+import { commitAndOpenPR } from '@/lib/github'
+import {
+  SectionsFileSchema,
+  ThemeTokensSchema,
+  ModerationResultSchema,
+  UpdateSectionsTool,
+  UpdateThemeTool,
+} from '@/lib/schemas'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+// Read once at module load — stable reference docs injected into every generate-patch call.
+// system-reference.md is the agent's factual ground truth about this system.
+const systemReference = readFileSync(
+  join(process.cwd(), 'docs/system-reference.md'),
+  'utf8'
+)
 
 export const processComment = inngest.createFunction(
   {
@@ -89,13 +97,102 @@ export const processComment = inngest.createFunction(
       return { rejected: true, reason: moderation.reason }
     }
 
-    // Steps 3–6: generate-patch, validate-patch, create-pr, mark-merged
-    // TODO Phase 17: rewire to UpdateSectionsTool + content/sections.json
-    await step.run('generate-patch', async () => {
-      throw new Error(
-        'Phase 17 pending: generate-patch not yet wired to UpdateSectionsTool. ' +
-        'Pipeline stops here until the pipeline rewire phase is complete.'
-      )
+    // Step 3: Generate structured patch with Sonnet
+    const patch = await step.run('generate-patch', async () => {
+      await supabase.from('comments').update({ status: 'generating' }).eq('id', commentId)
+
+      // Read current file state fresh at generation time — not at module load.
+      // This ensures the agent works from the latest deployed content.
+      const currentSections = readFileSync(join(process.cwd(), 'content/sections.json'), 'utf8')
+      const currentTheme = readFileSync(join(process.cwd(), 'theme/tokens.json'), 'utf8')
+
+      const res = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        system: [
+          'You apply visitor suggestions to a marketing site by calling the appropriate tool.',
+          '',
+          'Use update_sections for any change to page content or structure — rewriting text,',
+          'splitting, merging, reordering, adding, removing, or hiding sections.',
+          'Use update_theme only for color changes (accent color).',
+          '',
+          `The visitor is targeting element: ${comment.edit_id}.`,
+          `Current sections: ${currentSections}`,
+          `Current theme: ${currentTheme}`,
+          '',
+          '---',
+          'SYSTEM REFERENCE — factual ground truth about this site.',
+          'Use this when writing or rewriting content about the system.',
+          'Do not invent facts not present here.',
+          '---',
+          systemReference,
+        ].join('\n'),
+        tools: [
+          {
+            name: UpdateSectionsTool.name,
+            description: UpdateSectionsTool.description,
+            input_schema: UpdateSectionsTool.input_schema as Anthropic.Tool['input_schema'],
+          },
+          {
+            name: UpdateThemeTool.name,
+            description: UpdateThemeTool.description,
+            input_schema: UpdateThemeTool.input_schema as Anthropic.Tool['input_schema'],
+          },
+        ],
+        tool_choice: { type: 'any' },
+        messages: [{ role: 'user', content: comment.text }],
+      })
+
+      const toolUse = res.content.find((c) => c.type === 'tool_use')
+      if (!toolUse || toolUse.type !== 'tool_use') {
+        throw new Error('No tool use in Anthropic response — model returned text instead of a tool call')
+      }
+
+      return { name: toolUse.name, input: toolUse.input as Record<string, unknown> }
     })
+
+    // Step 4: Validate patch against the relevant Zod schema
+    await step.run('validate-patch', async () => {
+      if (patch.name === 'update_sections') {
+        SectionsFileSchema.parse({ sections: patch.input.sections })
+      } else if (patch.name === 'update_theme') {
+        const currentTheme = JSON.parse(
+          readFileSync(join(process.cwd(), 'theme/tokens.json'), 'utf8')
+        )
+        ThemeTokensSchema.parse({ ...currentTheme, ...patch.input })
+      } else {
+        throw new Error(`Unknown tool name: ${patch.name}`)
+      }
+    })
+
+    // Step 5: Commit + open PR + auto-merge
+    const prUrl = await step.run('create-pr', async () => {
+      return await commitAndOpenPR({
+        commentId,
+        commentText: comment.text,
+        editId: comment.edit_id,
+        toolName: patch.name,
+        patch: patch.input,
+      })
+    })
+
+    // Step 6: Mark merged
+    await step.run('mark-merged', async () => {
+      const layer = patch.name === 'update_sections' ? 'content' : 'theme'
+      const resolvedEditId = patch.name === 'update_theme' ? 'theme.accent' : comment.edit_id
+
+      await supabase
+        .from('comments')
+        .update({
+          status: 'merged',
+          patch,
+          pr_url: prUrl,
+          resolved_edit_id: resolvedEditId,
+          reasoning: `Routed to ${layer} layer. Target: ${comment.edit_id}.`,
+        })
+        .eq('id', commentId)
+    })
+
+    return { merged: true, pr_url: prUrl }
   }
 )
