@@ -13,9 +13,8 @@ export async function commitAndOpenPR(input: {
 }): Promise<string> {
   const branch = `agent/${input.commentId.slice(0, 8)}`
   const filePathMap: Record<string, string> = {
-    update_content: 'content/hero.json',
+    update_sections: 'content/sections.json',
     update_theme: 'theme/tokens.json',
-    update_override: 'overrides/index.json',
   }
   const filePath = filePathMap[input.toolName]
   if (!filePath) throw new Error(`Unknown tool name: ${input.toolName}`)
@@ -38,7 +37,7 @@ export async function commitAndOpenPR(input: {
     sha: mainRef.object.sha,
   })
 
-  // Get current file content
+  // Get current file content + SHA (needed for the update call)
   const { data: file } = await octokit.repos.getContent({
     owner,
     repo,
@@ -48,8 +47,16 @@ export async function commitAndOpenPR(input: {
 
   if (!('content' in file)) throw new Error(`${filePath} is not a file`)
 
-  const current = JSON.parse(Buffer.from(file.content, 'base64').toString())
-  const updated = { ...current, ...input.patch }
+  // Build the new file content:
+  // - update_sections: patch IS the complete new file (agent returns full array)
+  // - update_theme: merge current file with partial patch
+  let updated: unknown
+  if (input.toolName === 'update_sections') {
+    updated = { sections: input.patch.sections }
+  } else {
+    const current = JSON.parse(Buffer.from(file.content, 'base64').toString())
+    updated = { ...current, ...input.patch }
+  }
 
   // Commit the patch
   await octokit.repos.createOrUpdateFileContents({
@@ -69,7 +76,7 @@ export async function commitAndOpenPR(input: {
     title: `agent(${input.editId}): ${input.commentText.slice(0, 60)}`,
     head: branch,
     base: 'main',
-    body: `**Suggestion:** ${input.commentText}\n**Target:** \`${input.editId}\`\n**Layer:** ${input.toolName === 'update_content' ? 'content' : 'theme'}`,
+    body: `**Suggestion:** ${input.commentText}\n**Target:** \`${input.editId}\`\n**Layer:** ${input.toolName === 'update_sections' ? 'content' : 'theme'}`,
   })
 
   // Enable auto-merge — GitHub merges once all required checks pass
