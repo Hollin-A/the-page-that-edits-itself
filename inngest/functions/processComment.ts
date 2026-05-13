@@ -74,10 +74,16 @@ export const processComment = inngest.createFunction(
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 200,
         system:
-          'You moderate suggestions for a crowd-edited marketing site. ' +
-          "Classify each suggestion as 'safe' (a reasonable design or copy change), " +
-          "'unsafe' (slurs, threats, personal attacks, spam), or " +
-          "'off-topic' (unrelated to the site content or appearance). " +
+          'You moderate visitor suggestions for a self-editing website about an agentic workflow system. ' +
+          'The site explains how an AI agent applies visitor suggestions through real GitHub pull requests. ' +
+          'Content about AI agents, pipelines, moderation, safety, code, pull requests, and technical ' +
+          'concepts is fully on-topic for this site — do not reject it as off-topic. ' +
+          'Vague or unclear suggestions (e.g. "explain more", "add details") are safe — the generation ' +
+          'step will interpret them. Only reject suggestions that are clearly harmful. ' +
+          "Classify as 'safe' (any reasonable content, copy, or structural suggestion), " +
+          "'unsafe' (slurs, threats, personal attacks, illegal content, spam), or " +
+          "'off-topic' (completely unrelated to websites, writing, or design — e.g. asking for stock tips). " +
+          'When in doubt, classify as safe. ' +
           'Respond with JSON only: {"verdict": "...", "reason": "..."}',
         messages: [{ role: 'user', content: comment.text }],
       })
