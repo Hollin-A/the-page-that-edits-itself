@@ -9,7 +9,7 @@ import {
   useState,
   ReactNode,
 } from 'react'
-import { createBrowserClient } from '@/lib/supabase-browser'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import type { Comment } from '@/lib/schemas'
 import XRayPill from './XRayPill'
 import XRaySidebar from './XRaySidebar'
@@ -48,7 +48,7 @@ export default function XRayProvider({ children }: { children: ReactNode }) {
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
-  const supabase = useRef(createBrowserClient())
+  const supabase = useRef(supabaseBrowser)
 
   // Shared Supabase subscription — consumed by ActivityFeed and XRaySidebar
   useEffect(() => {
