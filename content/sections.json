@@ -2,20 +2,19 @@
   "sections": [
     {
       "id": "main-heading",
-      "type": "heading",
       "level": 1,
       "text": "The site that edits itself",
+      "type": "heading",
       "visible": true
     },
     {
       "id": "elevator-pitch",
-      "type": "paragraph",
       "text": "Every word on this page was suggested by a visitor and applied by an AI agent through a real GitHub pull request. Suggest a change, watch the pipeline run, see the page update.",
+      "type": "paragraph",
       "visible": true
     },
     {
       "id": "pipeline-steps",
-      "type": "ordered-list",
       "items": [
         "Moderation — Claude Haiku checks the suggestion for safety and relevance",
         "Generation — Claude Sonnet produces a structured patch",
@@ -24,60 +23,94 @@
         "Merge — CI runs the allowlist check; if it passes, GitHub auto-merges",
         "Deploy — Vercel rebuilds; the page updates within 60 seconds"
       ],
+      "type": "ordered-list",
       "visible": true
     },
     {
+      "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist. The agent can only modify structured data — never application code, never component files. This means even a malicious or malformed suggestion cannot damage the site: the CI wall is enforced at the repository level, independent of the AI models entirely.",
       "id": "safety-callout",
-      "type": "callout",
-      "tone": "info",
       "title": "The agent cannot break the site",
-      "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist. The agent can only modify structured data — never application code, never component files.",
+      "tone": "info",
+      "type": "callout",
       "visible": true
     },
     {
-      "id": "limits-callout",
-      "type": "callout",
-      "tone": "warn",
-      "title": "What the agent cannot do",
+      "id": "safety-detail-heading",
+      "level": 3,
+      "text": "How the safety wall actually works",
+      "type": "heading",
+      "visible": true
+    },
+    {
+      "id": "safety-detail-paragraph",
+      "text": "When the agent generates a patch and opens a pull request, a GitHub Actions CI workflow runs automatically. It inspects every file changed in the PR and checks each one against an allowlist of permitted paths: content/, theme/, and overrides/. If even a single file outside that allowlist is touched — intentionally or not — the workflow fails and the PR is blocked from merging. GitHub's branch protection rules enforce this: auto-merge cannot proceed until CI passes. The agent has no ability to bypass this check because the check runs on GitHub's infrastructure, not inside the agent pipeline.",
+      "type": "paragraph",
+      "visible": true
+    },
+    {
+      "id": "safety-layers-heading",
+      "level": 3,
+      "text": "Other independent safety layers",
+      "type": "heading",
+      "visible": true
+    },
+    {
+      "id": "safety-layers-list",
+      "items": [
+        "AI moderation gate — Claude Haiku screens every suggestion before any Sonnet call is made, rejecting unsafe or off-topic content cheaply",
+        "Zod schema validation — the agent's output is validated against strict schemas before any commit happens; bad shapes or invalid values are caught here",
+        "Element locking — while a comment is in the pipeline, the same element cannot be targeted again, preventing race conditions",
+        "Kill switch — the owner can halt the entire pipeline instantly from the admin panel, before any API call is made",
+        "Rate limiting — 3 submissions per hour for anonymous users, 20 per hour for authenticated GitHub users, tracked by hashed IP",
+        "Anthropic spend cap — a hard monthly limit in the Anthropic console ensures financial exposure is fixed regardless of traffic"
+      ],
+      "type": "bullet-list",
+      "visible": true
+    },
+    {
       "body": "The agent cannot invent new section types, write arbitrary HTML, or modify styling. It manipulates structured data that pre-built components know how to render. Constraints are the point.",
+      "id": "limits-callout",
+      "title": "What the agent cannot do",
+      "tone": "warn",
+      "type": "callout",
       "visible": true
     },
     {
       "id": "what-structural-means",
-      "type": "paragraph",
       "text": "Structural edits mean the agent can split one paragraph into three, merge sections, reorder them, add a new callout, or remove a section entirely — not just swap words. The page shape itself is editable.",
+      "type": "paragraph",
       "visible": true
     },
     {
-      "id": "commit-format",
-      "type": "code-block",
-      "language": "bash",
       "code": "agent(elevator-pitch): rewrite opening paragraph to active voice",
+      "id": "commit-format",
+      "language": "bash",
+      "type": "code-block",
       "visible": true
     },
     {
       "id": "try-suggestions",
-      "type": "bullet-list",
       "items": [
         "\"Split this paragraph into three points\"",
         "\"Add a section about the kill switch\"",
         "\"Put the pipeline steps after the callout\"",
         "\"Make the safety callout a success tone\""
       ],
+      "type": "bullet-list",
       "visible": true
     },
     {
-      "id": "closing-quote",
-      "type": "quote",
-      "text": "The thing is interesting because it's real, not because it claims to be.",
       "attribution": "docs/system-reference.md",
+      "id": "closing-quote",
+      "text": "The thing is interesting because it's real, not because it claims to be.",
+      "type": "quote",
       "visible": true
     },
     {
-      "id": "see-prs",
-      "type": "link-block",
-      "text": "Every change has a real pull request →",
       "href": "https://github.com/Hollin-A/agentic-workflow-prototype/pulls",
+      "id": "see-prs",
+      "text": "Every change has a real pull request →",
+      "type": "link-block",
       "visible": true
     }
   ]
