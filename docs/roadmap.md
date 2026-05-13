@@ -1,51 +1,116 @@
 # Roadmap
 
-## v0 — Prototype (this repo)
+---
 
-The vertical slice. Proves the full agentic loop works before building the full system.
+## v0 — Prototype ✓
 
-**In scope:**
+The vertical slice. Proves the full agentic loop works end-to-end before building the full system.
+
+**Shipped:**
 - Single page with three editable surfaces: hero title, hero subtitle, theme accent color
 - Corner-icon comment affordance on each editable element
-- Comment submission API with IP-based rate limiting (3/hour)
+- Comment submission API with IP-based rate limiting (3/hour anonymous)
 - Inngest workflow: moderation → generation → schema validation → PR → auto-merge → deploy
 - Claude Haiku for moderation, Claude Sonnet for generation
 - Structured output via Anthropic tool use, validated against Zod schemas
-- Real-time activity feed (Supabase Realtime)
-- Theme and content layers only
+- Real-time activity feed via Supabase Realtime
 - Anonymous-only submissions
 - CI allowlist: agent PRs may only touch `content/hero.json` and `theme/tokens.json`
 
-**Out of scope (deferred to v1):**
-- Override layer
-- Element locking
-- X-ray view
-- OAuth login
-- Owner ops panel
-- Contributor notifications
+**Deferred to v1:**
+- Override layer, element locking, X-ray view, OAuth login, owner ops panel
 
-**Done when:** the happy path works end-to-end, moderation rejects bad-faith comments, schema validation catches invalid LLM output, the activity feed updates without a page refresh, and rate limiting blocks excessive submissions.
+**Contributor notifications** — dropped entirely. Not warranted at this scale.
 
 ---
 
-## v1 — Full system
+## v1 — Full system ✓
 
-Built on top of v0 once the prototype is validated. Order reflects priority.
+**Shipped:**
 
-1. **Override layer** — third Zod schema, third editable file (`overrides/index.json`), `update_override` tool. Highest-value addition: unlocks the most interesting agent routing demo.
-2. **X-ray view** — toggle that overlays `data-edit-id` labels, comment pins, and a pipeline sidebar. Three entry points: ambient pill button, `⌘.` shortcut, click-from-feed. Includes deep-linkable state (`?xray=hero.title`) so specific elements can be shared or linked from the activity feed.
-3. **Element locking + resolved edit tracking** — when a comment for an element is active in the pipeline, that element is locked: the comment affordance is disabled and a "being updated" indicator shown. Unlocks when the comment reaches `merged` or `rejected`. Also adds `resolved_edit_id` to the database — the actual element the agent wrote to — distinct from the `edit_id` captured at click time (which can diverge when a visitor comments on one element about another). The activity feed and X-ray surface the resolved target.
-4. **Live page content refresh** — page content is statically generated at build time; visitors must refresh after a Vercel redeploy to see agent changes. Fix via ISR (`revalidate` on the fetch) so the page re-renders automatically once the new deployment is live.
-5. **OAuth login** (GitHub + Google) — higher rate limits, real attribution, "your suggestion is live" notification.
-6. **Owner ops panel** — moderation queue, kill switch, spend cap config, ban controls.
+1. **Override layer** — third editable layer (`overrides/index.json`), `update_override` tool, CSS variables applied to the page. Agent routes across all three layers.
+
+2. **X-ray view** — toggleable overlay with `data-edit-id` labels, pipeline sidebar, `⌘.` shortcut, activity-feed click entry point, `?xray=<edit-id>` deep links. Simplified vs original spec: sidebar shows per-element comment history inline (last 3 comments); full narrative feed moved to the activity panel.
+
+3. **Element locking** — while a comment is in the pipeline, its target element is locked (409 on new submissions, disabled affordance on the element). Unlocks on `merged` or `rejected`. `resolved_edit_id` tracked separately from `edit_id` when the agent writes to a different element than the one clicked.
+
+4. **ISR / live content refresh** — `export const revalidate = 60` on `app/page.tsx`; content files read at render time via `fs.readFileSync` (not bundled static imports). Page refreshes within ~60 seconds of a merge without a manual reload.
+
+5. **OAuth login** — GitHub-only (Google dropped — not needed). Higher rate limit for authenticated users (20/hr vs 3/hr anonymous). GitHub avatars via `avatars.githubusercontent.com/u/{id}`. Attribution shown in activity panel and X-ray sidebar. Notification on deploy — deferred.
+
+6. **Floating activity panel** — inline feed removed from the page. Replaced by a fixed bottom-right card (420px, 70vh max). Ambient pill shows live queue count and last-change time. Rejected/failed rows get a coloured left border and a text status pill.
+
+7. **Owner ops panel** — protected `/admin` route gated by `ADMIN_EMAIL`. Stats grid (suggestions / applied / rejected / in pipeline), kill switch (halts pipeline before moderation, marks `failed`, zero API spend), real-time activity log with status filter tabs. Kill switch revalidates the admin page on toggle.
+
+**Deferred to v2:**
+- Held-comment moderation queue
+- Anthropic spend cap (Anthropic console — not a code change)
+- Vercel deploy webhook → true `deployed` status
+- Require GitHub sign-in (anonymous still allowed in v1)
+
+**Dropped / deferred indefinitely:**
+- Spend cap card in admin (requires cost instrumentation)
+- Ban controls
+- Agent prompt editor
+- Notification on deploy for logged-in users
+
+---
+
+## v2 — Section list model + hardening
+
+The credibility upgrade. Replaces the fixed-shape content model with a dynamic array of typed sections, unlocking structural edits. Adds all deferred security hardening.
+
+**In scope:**
+
+### Section list model *(core change)*
+The page is rendered from a single ordered array of typed sections in `content/sections.json`. This is the entire point of v2 — it lets the agent restructure the page, not just rewrite words.
+
+Eight section types at launch:
+
+| Type | Fields |
+|---|---|
+| `heading` | `level` (1–3), `text` |
+| `paragraph` | `text` |
+| `callout` | `tone` (info / warn / success), `title`, `body` |
+| `ordered-list` | `items[]` |
+| `bullet-list` | `items[]` |
+| `code-block` | `language`, `code` |
+| `link-block` | `text`, `href` |
+| `quote` | `text`, `attribution` |
+
+Structural operations now available: rewrite, split, merge, reorder, add, remove, type-change, show/hide. The agent returns the complete sections array on every edit — never a diff. Zod discriminated union validates the shape before any commit.
+
+`hero.json` and `overrides/index.json` are replaced by `content/sections.json`. The CI allowlist is updated accordingly. Everything else — `EditableElement`, pipeline, auth, admin — is unchanged.
+
+### Security hardening
+- **Require GitHub sign-in** — anonymous submissions dropped. `ALLOW_ANONYMOUS` env var for local dev only.
+- **Honeypot field** — hidden form input; silent reject if populated.
+- **Anthropic spend cap** — monthly hard cap set in the Anthropic console before launch. Not a code change.
+- **Held-comment moderation queue** — pipeline flags a comment `held` before `create-pr` when `require_approval = true` (owner-toggled in admin) or when agent confidence is below threshold. Admin panel gets a Held tab with Approve / Reject per comment. Approving re-runs `generate-patch` against current file state — stored patch is preview only, not what gets committed.
+
+### Vercel deploy webhook
+`/api/deploy-webhook` receives Vercel's deployment completion POST and updates matching comment rows from `merged` to `deployed`. Activity panel and X-ray sidebar surface `deployed` as the true final state.
+
+### Agent ground truth
+`docs/system-reference.md` injected into the generate-patch system prompt. Agent has factual grounding when writing content about the system; won't hallucinate architecture details.
+
+### Launch content + docs
+Deliberate 8–10 section initial content. Page explicitly surfaces structural suggestion prompts. `architecture.md` and `README.md` rewritten for the v2 model.
+
+**Done when:** a visitor can suggest "split this paragraph into three," watch a PR open with three sections where one existed, and see the page update with `deployed` status — all within 90 seconds.
 
 ---
 
 ## Later / open questions
 
-- **Voting** — vote table, vote endpoint, queue ordering by votes. Skipped in v1 in favour of element locking as the simpler and more explainable conflict resolution mechanism. Worth revisiting at scale when multiple simultaneous submissions per element become common.
-- **Conflict detection + decision windows** — depends on voting; deferred alongside it.
-- **Vercel deploy webhook** — POST to an API route when a deployment completes; update the comment row status from `merged` to `deployed` so the activity feed reflects the true live state. Currently the feed shows "Merged — deploying" because the pipeline has no signal for when Vercel finishes.
-- Portfolio teaser integration — a small scoped version embedded on a separate portfolio site
-- GHAW hybrid for the PR step — adds defence-in-depth if the project gets serious attention
-- PostHog for product analytics — optional, decide based on whether traffic data is useful
+These are real features but not warranted at v2 scale. Revisit when there's evidence they're needed.
+
+- **Voting** — vote table, vote endpoint, queue ordering by votes. Useful when simultaneous suggestions per element are common. Skipped in v1 and v2 in favour of element locking as the simpler conflict resolution mechanism.
+- **Conflict detection + decision windows** — depends on voting. Deferred alongside it.
+- **Diagram section type** — requires pre-built SVG/React components and a maintained slug catalog. Add when there's a specific diagram to ship, not speculatively.
+- **Agent confidence scoring** — prompting the model to self-rate certainty is unreliable in practice. `require_approval` flag covers the manual approval case. Revisit if held-queue patterns reveal a real need.
+- **PostHog analytics** — add after v2 ships and real traffic exists.
+- **GHAW hybrid for PR step** — additional defence-in-depth. CI allowlist is already the hard wall. Defer unless the project gets serious attack surface.
+- **Vercel deploy webhook** — moved into v2. ✓
+- **Ban controls** — `banned_ips` table + submission API check. Low priority while GitHub sign-in is required.
+- **Notification on deploy** — email or in-app notification when a logged-in user's suggestion goes live. Deferred since v1.
