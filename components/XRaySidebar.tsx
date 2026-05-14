@@ -11,6 +11,7 @@ const STATUS_DOT: Record<Comment['status'], string> = {
   queued: 'bg-neutral-300',
   moderating: 'bg-yellow-400',
   generating: 'bg-blue-400 animate-pulse',
+  held: 'bg-purple-400',
   merged: 'bg-green-400',
   rejected: 'bg-red-400',
   failed: 'bg-orange-400',

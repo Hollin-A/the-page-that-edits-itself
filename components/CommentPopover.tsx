@@ -21,6 +21,7 @@ export default function CommentPopover({
   position: { top: number; right: number }
 }) {
   const [text, setText] = useState('')
+  const [website, setWebsite] = useState('') // honeypot — never shown to real users
   const [status, setStatus] = useState<Status>('idle')
   const { data: session } = useSession()
   const user = session?.user as { name?: string; image?: string; login?: string } | undefined
@@ -32,8 +33,12 @@ export default function CommentPopover({
       const res = await fetch('/api/comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ edit_id: editId, text: text.trim() }),
+        body: JSON.stringify({ edit_id: editId, text: text.trim(), website }),
       })
+      if (res.status === 401) {
+        setStatus('error')
+        return
+      }
       if (res.status === 429) {
         setStatus('error')
         return
@@ -106,6 +111,18 @@ export default function CommentPopover({
         </p>
       ) : (
         <>
+          {/* Honeypot — hidden from real users, traps simple bots */}
+          <input
+            name="website"
+            type="text"
+            value={website}
+            onChange={e => setWebsite(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden
+            className="hidden"
+          />
+
           <textarea
             autoFocus
             value={text}
@@ -116,7 +133,7 @@ export default function CommentPopover({
           />
           {status === 'error' && (
             <p className="text-xs text-red-500 mt-1">
-              Could not submit — you may have hit the rate limit.
+              Could not submit — sign in with GitHub or check your rate limit.
             </p>
           )}
           <div className="flex justify-between items-center mt-2">
