@@ -9,25 +9,27 @@
     },
     {
       "id": "elevator-pitch",
-      "text": "This page accepts real visitor suggestions. An AI agent reviews each one, generates a structured patch, and opens a pull request against the repository. If CI passes, the change is auto-merged and Vercel rebuilds the page — all within 30–90 seconds, with no human in the loop.",
+      "text": "This page accepts real visitor suggestions via a POST to /api/comment. An Inngest function orchestrates the pipeline: Claude Haiku moderates the suggestion, Claude Sonnet generates a structured patch validated by Zod schemas, Octokit commits the patch and opens a pull request, CI runs an allowlist check on every changed file path, and GitHub auto-merges on pass. Vercel rebuilds on merge. End-to-end latency is 30–90 seconds. No human is in the loop unless a comment is held for owner review.",
       "type": "paragraph",
       "visible": true
     },
     {
       "id": "pipeline-steps",
       "items": [
-        "Moderation — Claude Haiku checks the suggestion for safety and relevance",
-        "Generation — Claude Sonnet produces a structured patch",
-        "Validation — Zod schemas enforce the patch shape before any commit",
-        "Commit — Octokit opens a pull request against the repository",
-        "Merge — CI runs the allowlist check; if it passes, GitHub auto-merges",
-        "Deploy — Vercel rebuilds; the page updates within 60 seconds"
+        "POST /api/comment — suggestion is received, IP hashed (SHA-256), rate-limited, and a row inserted to Supabase with status queued; an event is dispatched to Inngest",
+        "Kill switch check — settings table is read; if the kill switch is active, the comment is marked failed before any API call is made",
+        "Moderation — Claude Haiku returns a verdict of safe, unsafe, or off-topic; anything not safe halts the pipeline here",
+        "Generation — Claude Sonnet receives current content, the target edit_id, and the suggestion; it calls the update_sections tool and returns a typed patch",
+        "Validation — the patch is run through Zod schemas; bad shapes, invalid enum values, or oversized fields throw and mark the comment failed",
+        "Commit — Octokit creates a branch, writes the patched file to content/sections.json or theme/tokens.json, and opens a PR with message format agent(edit_id): description; auto-merge is enabled",
+        "CI — GitHub Actions inspects every file in the PR diff against an allowlist of content/, theme/, and overrides/; any path outside the allowlist fails the workflow and blocks merge",
+        "Deploy — Vercel rebuilds on merge; ISR with revalidate=60 propagates the update to visitors within 60 seconds"
       ],
       "type": "ordered-list",
       "visible": true
     },
     {
-      "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist. The agent can only modify structured data — never application code, never component files. This means even a malicious or malformed suggestion cannot damage the site: the CI wall is enforced at the repository level, independent of the AI models entirely.",
+      "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist (content/, theme/, overrides/). The check runs on GitHub's infrastructure, independent of the agent pipeline. Even a malicious or malformed patch cannot reach application code — the CI wall is enforced at the repository level, not inside the AI models.",
       "id": "safety-callout",
       "title": "The agent cannot break the site",
       "tone": "info",
@@ -37,13 +39,13 @@
     {
       "id": "safety-detail-heading",
       "level": 3,
-      "text": "How the safety wall actually works",
+      "text": "How the CI allowlist check actually works",
       "type": "heading",
       "visible": true
     },
     {
       "id": "safety-detail-paragraph",
-      "text": "When the agent generates a patch and opens a pull request, a GitHub Actions CI workflow runs automatically. It inspects every file changed in the PR and checks each one against an allowlist of permitted paths: content/, theme/, and overrides/. If even a single file outside that allowlist is touched — intentionally or not — the workflow fails and the PR is blocked from merging. GitHub's branch protection rules enforce this: auto-merge cannot proceed until CI passes. The agent has no ability to bypass this check because the check runs on GitHub's infrastructure, not inside the agent pipeline.",
+      "text": "When Octokit opens a PR, GitHub Actions triggers a workflow that calls the GitHub API to fetch the full list of changed file paths in the diff. Each path is matched against the allowlist: content/, theme/, and overrides/. If any single path falls outside those prefixes — whether introduced intentionally or by a malformed patch — the workflow exits with a non-zero code, the CI check fails, and GitHub's branch protection rules prevent auto-merge from proceeding. The Inngest step that enabled auto-merge has no ability to override this: the check runs on GitHub's infrastructure, not inside the agent's execution context.",
       "type": "paragraph",
       "visible": true
     },
@@ -57,18 +59,19 @@
     {
       "id": "safety-layers-list",
       "items": [
-        "AI moderation gate — Claude Haiku screens every suggestion before any Sonnet call is made, rejecting unsafe or off-topic content cheaply",
-        "Zod schema validation — the agent's output is validated against strict schemas before any commit happens; bad shapes or invalid values are caught here",
-        "Element locking — while a comment is in the pipeline, the same element cannot be targeted again, preventing race conditions",
-        "Kill switch — the owner can halt the entire pipeline instantly from the admin panel, before any API call is made",
-        "Rate limiting — 3 submissions per hour for anonymous users, 20 per hour for authenticated GitHub users, tracked by hashed IP",
-        "Anthropic spend cap — a hard monthly limit in the Anthropic console ensures financial exposure is fixed regardless of traffic"
+        "Rate limiting — 3 submissions/hour for anonymous users, 20/hour for GitHub-authenticated users, tracked by SHA-256 hashed IP stored in Supabase",
+        "AI moderation gate — Claude Haiku screens every suggestion before any Sonnet call; unsafe or off-topic content is rejected at the cheapest step in the pipeline",
+        "Zod schema validation — the agent's output is validated against strict schemas before any commit; bad shapes, missing required fields, and out-of-range values are all caught here",
+        "Element locking — while a comment is in-flight, its target edit_id is locked; further submissions for the same element return HTTP 409 until the comment resolves",
+        "Kill switch — reads the kill_switch row in the settings table; if active, the Inngest function halts before making any Anthropic API call",
+        "Anthropic spend cap — a hard monthly limit configured in the Anthropic console; when reached, the API returns errors and the pipeline marks comments failed",
+        "Held-comment queue — low-confidence outputs or sensitive edits are held for owner review; on approval, the patch is re-generated against current file state to avoid stale-patch merge conflicts"
       ],
       "type": "bullet-list",
       "visible": true
     },
     {
-      "body": "The agent cannot invent new section types, write arbitrary HTML, or modify styling. It manipulates structured data that pre-built components know how to render. Constraints are the point.",
+      "body": "The agent cannot invent new section types, write arbitrary HTML, or modify styling beyond the token schema. It calls update_sections with typed structured data that pre-registered renderer components know how to render. The renderer registry is hardcoded in application code — outside the agent's write scope entirely.",
       "id": "limits-callout",
       "title": "What the agent cannot do",
       "tone": "warn",
@@ -77,7 +80,7 @@
     },
     {
       "id": "what-structural-means",
-      "text": "Structural edits mean the agent can split one paragraph into three, merge sections, reorder them, add a new callout, or remove a section entirely — not just swap words. The page shape itself is editable.",
+      "text": "Structural edits are not limited to text substitution. The agent can split one section into multiple nodes, merge adjacent sections, reorder the sections array, insert a new typed section, change a section's type field (e.g. paragraph → callout), or set visible: false to hide a section — all by manipulating the JSON array that the renderer consumes.",
       "type": "paragraph",
       "visible": true
     },
