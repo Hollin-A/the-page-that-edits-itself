@@ -19,23 +19,27 @@ export default function XRayPill() {
       {!active && (
         <button
           onClick={panelOpen ? closePanel : openPanel}
-          className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs shadow-lg transition-all select-none ${
+          className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs shadow-lg transition-all select-none border ${
             panelOpen
-              ? 'bg-[#14141A] text-white'
-              : 'bg-white border border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
+              ? 'bg-[var(--accent)]/15 border-[var(--accent)]/40 text-[var(--accent)]'
+              : 'bg-[#0e0e14] border-white/[0.10] text-white/50 hover:border-[var(--accent)]/30 hover:text-white/70'
           }`}
         >
           <span
-            className={`w-2 h-2 rounded-full shrink-0 ${
-              inQueue > 0 ? 'bg-green-400 animate-pulse' : panelOpen ? 'bg-neutral-500' : 'bg-neutral-300'
+            className={`w-2 h-2 rounded-full shrink-0 transition-colors ${
+              inQueue > 0
+                ? 'bg-[var(--accent)] animate-pulse'
+                : panelOpen
+                ? 'bg-[var(--accent)]/60'
+                : 'bg-white/20'
             }`}
           />
           {inQueue > 0 ? (
             <span>
-              <strong className={panelOpen ? 'text-white' : 'text-neutral-700'}>{inQueue}</strong> in queue
+              <strong className="text-[var(--accent)]">{inQueue}</strong> in pipeline
             </span>
           ) : (
-            <span>Live activity</span>
+            <span>Activity</span>
           )}
         </button>
       )}
@@ -44,10 +48,10 @@ export default function XRayPill() {
       <button
         onClick={toggle}
         title="Toggle X-Ray mode (⌘.)"
-        className={`px-4 py-2 rounded-full text-xs font-semibold shadow-lg transition-all select-none ${
+        className={`px-4 py-2 rounded-full text-xs font-semibold shadow-lg transition-all select-none border ${
           active
-            ? 'bg-[#14141A] text-white'
-            : 'bg-white border border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
+            ? 'bg-[var(--accent)]/15 border-[var(--accent)]/40 text-[var(--accent)]'
+            : 'bg-[#0e0e14] border-white/[0.10] text-white/50 hover:border-[var(--accent)]/30 hover:text-white/70'
         }`}
       >
         {active ? 'Exit X-Ray' : '⌘· X-Ray'}
