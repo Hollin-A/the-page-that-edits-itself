@@ -103,16 +103,16 @@
       "visible": true
     },
     {
-      "attribution": "docs/system-reference.md",
-      "id": "closing-quote",
-      "text": "The thing is interesting because it's real, not because it claims to be.",
+      "attribution": "docs/system-reference.md — on what this workflow actually does",
+      "id": "capability-quote",
+      "text": "A suggestion can split a paragraph into three, reorder sections, add a callout, or remove a section entirely. A pure database cannot rearrange page structure. Every change has a real GitHub PR, real CI, and a real deploy — because real work is happening at each step.",
       "type": "quote",
       "visible": true
     },
     {
-      "attribution": "docs/system-reference.md — on what this workflow actually does",
-      "id": "capability-quote",
-      "text": "A suggestion can split a paragraph into three, reorder sections, add a callout, or remove a section entirely. A pure database cannot rearrange page structure. Every change has a real GitHub PR, real CI, and a real deploy — because real work is happening at each step.",
+      "attribution": "docs/system-reference.md",
+      "id": "closing-quote",
+      "text": "The thing is interesting because it's real, not because it claims to be.",
       "type": "quote",
       "visible": true
     },
