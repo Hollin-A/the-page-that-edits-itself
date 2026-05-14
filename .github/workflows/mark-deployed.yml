@@ -1,0 +1,23 @@
+name: Mark comments deployed
+
+# Fires on every push to main — which is what triggers a Vercel deployment.
+# Waits for the build to finish, then calls /api/deploy-webhook to flip all
+# merged comments to deployed status.
+on:
+  push:
+    branches: [main]
+
+jobs:
+  mark-deployed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel deployment
+        # Conservative estimate — adjust up if your build regularly takes longer.
+        run: sleep 120
+
+      - name: Call deploy webhook
+        # --fail exits non-zero on 4xx/5xx so the step surfaces auth errors clearly.
+        run: |
+          curl -sf -X POST "${{ secrets.SITE_URL }}/api/deploy-webhook" \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_HOOK_SECRET }}" \
+            -H "Content-Type: application/json"
