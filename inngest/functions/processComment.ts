@@ -110,14 +110,62 @@ export const processComment = inngest.createFunction(
       }
     } // end !isApproval moderation block
 
+    // Step 2b: Classify scope — section-level or global?
+    // Uses Haiku to determine if the suggestion targets the clicked element only,
+    // or explicitly intends a page-wide change. Result gates how much context
+    // the generate-patch step exposes to the model.
+    const scope = await step.run('classify-scope', async () => {
+      const res = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 10,
+        system:
+          'Classify the scope of a visitor suggestion for a web page. ' +
+          'Reply "section" if the suggestion targets a specific element ' +
+          '(e.g. "make this punchier", "rewrite this", "add more detail here", "make this more technical"). ' +
+          'Reply "global" only if the suggestion explicitly targets the whole page or multiple sections ' +
+          '(e.g. "make the whole site more formal", "reorder everything", "add a new section about X"). ' +
+          'When in doubt, reply "section". Reply with a single word only.',
+        messages: [{ role: 'user', content: comment.text }],
+      })
+      const raw = res.content[0].type === 'text' ? res.content[0].text.trim().toLowerCase() : ''
+      return raw === 'global' ? 'global' : 'section'
+    })
+
     // Step 3: Generate structured patch with Sonnet
     const patch = await step.run('generate-patch', async () => {
       await supabase.from('comments').update({ status: 'generating' }).eq('id', commentId)
 
       // Read current file state fresh at generation time — not at module load.
       // This ensures the agent works from the latest deployed content.
-      const currentSections = readFileSync(join(process.cwd(), 'content/sections.json'), 'utf8')
+      const currentSectionsRaw = readFileSync(join(process.cwd(), 'content/sections.json'), 'utf8')
       const currentTheme = readFileSync(join(process.cwd(), 'theme/tokens.json'), 'utf8')
+
+      // Build sections context based on classified scope.
+      // section-scope: clearly mark the target section vs read-only context sections.
+      // global-scope: pass all sections without distinction.
+      let sectionsContext: string
+      if (scope === 'section') {
+        const parsed = JSON.parse(currentSectionsRaw) as { sections: Array<{ id: string }> }
+        const target = parsed.sections.find((s) => s.id === comment.edit_id)
+        const context = parsed.sections.filter((s) => s.id !== comment.edit_id)
+        if (target) {
+          sectionsContext = [
+            'TARGET SECTION — this is the element the visitor clicked and wants to change:',
+            JSON.stringify(target, null, 2),
+            '',
+            'CONTEXT SECTIONS — present for structural awareness only.',
+            'Do NOT modify these unless the suggestion explicitly asks to change them.',
+            'Return them exactly as-is in your sections array:',
+            JSON.stringify(context, null, 2),
+          ].join('\n')
+        } else {
+          // edit_id doesn't map to a section (e.g. a new-section request or theme target)
+          sectionsContext = `Current sections: ${currentSectionsRaw}`
+        }
+      } else {
+        // Global scope — treat all sections as editable
+        sectionsContext = `Current sections: ${currentSectionsRaw}`
+      }
 
       const res = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
@@ -130,7 +178,7 @@ export const processComment = inngest.createFunction(
           'Use update_theme only for color changes (accent color).',
           '',
           `The visitor is targeting element: ${comment.edit_id}.`,
-          `Current sections: ${currentSections}`,
+          sectionsContext,
           `Current theme: ${currentTheme}`,
           '',
           '---',
