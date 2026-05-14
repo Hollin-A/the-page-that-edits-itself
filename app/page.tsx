@@ -21,11 +21,11 @@ export default function Page() {
       {/* Background glow orbs — fixed, behind everything */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
         <div
-          className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[120px] opacity-[0.07]"
+          className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[120px] opacity-[0.15]"
           style={{ background: tokens.accent }}
         />
-        <div className="absolute top-1/3 -right-32 w-[400px] h-[400px] rounded-full blur-[100px] opacity-[0.04] bg-violet-500" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[400px] rounded-full blur-[120px] opacity-[0.03] bg-cyan-500" />
+        <div className="absolute top-1/3 -right-32 w-[400px] h-[400px] rounded-full blur-[100px] opacity-[0.08] bg-violet-500" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[400px] rounded-full blur-[120px] opacity-[0.06] bg-cyan-500" />
       </div>
 
       <main className="relative min-h-screen px-6 sm:px-8">
