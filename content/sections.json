@@ -65,21 +65,41 @@
           },
           "geometry": {
             "params": [
-              0.7,
-              0.25,
-              100,
-              16,
-              2,
-              3
+              1.2
             ],
-            "type": "TorusKnot"
+            "type": "Dodecahedron"
           },
-          "id": "main-knot",
+          "id": "main-dodecahedron",
           "material": {
             "color": "#39FF14",
-            "metalness": 0.35,
-            "roughness": 0.15,
+            "metalness": 0.6,
+            "roughness": 0.05,
             "type": "MeshPhysicalMaterial"
+          }
+        },
+        {
+          "animation": {
+            "float": {
+              "amplitude": 0.12,
+              "speed": 0.8
+            },
+            "rotate": [
+              0.002,
+              0.006,
+              0.001
+            ]
+          },
+          "geometry": {
+            "params": [
+              1.2
+            ],
+            "type": "Dodecahedron"
+          },
+          "id": "main-dodecahedron-wireframe",
+          "material": {
+            "color": "#ffffff",
+            "type": "MeshBasicMaterial",
+            "wireframe": true
           }
         }
       ],
