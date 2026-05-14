@@ -8,6 +8,7 @@ import { auth } from '@/auth'
 const SubmitSchema = z.object({
   edit_id: z.string().min(1).max(80),
   text: z.string().min(1).max(500),
+  website: z.string().optional(), // honeypot — must be empty
 })
 
 const ANON_RATE_LIMIT = parseInt(process.env.RATE_LIMIT_PER_HOUR ?? '3', 10)
@@ -25,9 +26,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
+  // Honeypot — legitimate users never fill this field.
+  // Return 200 so bots don't know they were rejected.
+  if (parsed.data.website) {
+    return NextResponse.json({ id: 'ok' }, { status: 200 })
+  }
+
   const session = await auth()
   const sessionUser = session?.user as { login?: string; githubId?: string } | undefined
   const isAuthed = !!sessionUser?.githubId
+
+  // Require GitHub sign-in. ALLOW_ANONYMOUS=true bypasses this for local dev.
+  if (!isAuthed && process.env.ALLOW_ANONYMOUS !== 'true') {
+    return NextResponse.json(
+      { error: 'Sign in with GitHub to submit suggestions.' },
+      { status: 401 }
+    )
+  }
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown'
   const ip_hash = createHash('sha256').update(ip).digest('hex')

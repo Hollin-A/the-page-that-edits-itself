@@ -190,7 +190,7 @@ export const CommentSchema = z.object({
   id: z.string().uuid(),
   edit_id: z.string(),
   text: z.string().min(1).max(500),
-  status: z.enum(['queued', 'moderating', 'generating', 'merged', 'rejected', 'failed']),
+  status: z.enum(['queued', 'moderating', 'generating', 'merged', 'rejected', 'failed', 'held']),
   ip_hash: z.string(),
   reasoning: z.string().nullable(),
   patch: z.record(z.string(), z.unknown()).nullable(),

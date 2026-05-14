@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { NonRetriableError } from 'inngest'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { inngest } from '@/inngest/client'
@@ -25,7 +26,10 @@ export const processComment = inngest.createFunction(
   {
     id: 'process-comment',
     retries: 2,
-    triggers: [{ event: 'comment/submitted' }],
+    triggers: [
+      { event: 'comment/submitted' },
+      { event: 'comment/approved' },
+    ],
     onFailure: async ({ event, step }: { event: { data: { event: { data: { comment_id: string } }; error: { message: string } } }; step: any }) => {
       const commentId = event.data.event.data.comment_id
       await step.run('mark-failed', async () => {
@@ -36,8 +40,9 @@ export const processComment = inngest.createFunction(
       })
     },
   },
-  async ({ event, step }: { event: { data: { comment_id: string } }; step: any }) => {
+  async ({ event, step }: { event: { name: string; data: { comment_id: string } }; step: any }) => {
     const commentId = event.data.comment_id
+    const isApproval = event.name === 'comment/approved'
 
     // Step 1: Load comment
     const comment = await step.run('load-comment', async () => {
@@ -66,7 +71,8 @@ export const processComment = inngest.createFunction(
       }
     })
 
-    // Step 2: Moderation — cheap pass with Haiku
+    // Step 2: Moderation — skip for approvals (already moderated on first pass)
+    if (!isApproval) {
     const moderation = await step.run('moderate', async () => {
       await supabase.from('comments').update({ status: 'moderating' }).eq('id', commentId)
 
@@ -94,14 +100,15 @@ export const processComment = inngest.createFunction(
     })
 
     if (moderation.verdict !== 'safe') {
-      await step.run('mark-rejected', async () => {
-        await supabase
-          .from('comments')
-          .update({ status: 'rejected', reasoning: moderation.reason })
-          .eq('id', commentId)
-      })
-      return { rejected: true, reason: moderation.reason }
-    }
+        await step.run('mark-rejected', async () => {
+          await supabase
+            .from('comments')
+            .update({ status: 'rejected', reasoning: moderation.reason })
+            .eq('id', commentId)
+        })
+        return { rejected: true, reason: moderation.reason }
+      }
+    } // end !isApproval moderation block
 
     // Step 3: Generate structured patch with Sonnet
     const patch = await step.run('generate-patch', async () => {
@@ -170,6 +177,29 @@ export const processComment = inngest.createFunction(
         throw new Error(`Unknown tool name: ${patch.name}`)
       }
     })
+
+    // Step 4b: Hold check — skip for approvals (owner already reviewed)
+    if (!isApproval) {
+      await step.run('check-hold', async () => {
+        const { data: requireApprovalRow } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'require_approval')
+          .single()
+
+        if (requireApprovalRow?.value === 'true') {
+          await supabase
+            .from('comments')
+            .update({
+              status: 'held',
+              patch,
+              reasoning: 'Held for owner review. Patch generated against current content.',
+            })
+            .eq('id', commentId)
+          throw new NonRetriableError('Comment held for owner review.')
+        }
+      })
+    }
 
     // Step 5: Commit + open PR + auto-merge
     const prUrl = await step.run('create-pr', async () => {
