@@ -107,6 +107,13 @@
       "visible": true
     },
     {
+      "attribution": "docs/system-reference.md — on what this workflow actually does",
+      "id": "capability-quote",
+      "text": "A suggestion can split a paragraph into three, reorder sections, add a callout, or remove a section entirely. A pure database cannot rearrange page structure. Every change has a real GitHub PR, real CI, and a real deploy — because real work is happening at each step.",
+      "type": "quote",
+      "visible": true
+    },
+    {
       "href": "https://github.com/Hollin-A/agentic-workflow-prototype/pulls",
       "id": "see-prs",
       "text": "Every change has a real pull request →",
