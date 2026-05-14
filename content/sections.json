@@ -65,13 +65,13 @@
           },
           "geometry": {
             "params": [
-              2.2,
-              1.3,
-              0.9
+              0,
+              1.4,
+              8
             ],
-            "type": "Box"
+            "type": "Octahedron"
           },
-          "id": "main-parallelepiped",
+          "id": "main-diamond",
           "material": {
             "color": "#39FF14",
             "metalness": 0.6,
@@ -99,13 +99,13 @@
           },
           "geometry": {
             "params": [
-              2.2,
-              1.3,
-              0.9
+              0,
+              1.4,
+              8
             ],
-            "type": "Box"
+            "type": "Octahedron"
           },
-          "id": "main-parallelepiped-wireframe",
+          "id": "main-diamond-wireframe",
           "material": {
             "color": "#ffffff",
             "type": "MeshBasicMaterial",
