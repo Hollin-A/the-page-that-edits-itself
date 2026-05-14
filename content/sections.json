@@ -65,9 +65,7 @@
           },
           "geometry": {
             "params": [
-              0,
-              1.4,
-              8
+              1.4
             ],
             "type": "Octahedron"
           },
@@ -99,9 +97,7 @@
           },
           "geometry": {
             "params": [
-              0,
-              1.4,
-              8
+              1.4
             ],
             "type": "Octahedron"
           },
