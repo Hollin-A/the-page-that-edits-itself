@@ -16,14 +16,14 @@
     {
       "id": "pipeline-steps",
       "items": [
-        "POST /api/comment — suggestion is received, IP hashed (SHA-256), rate-limited, and a row inserted to Supabase with status queued; an event is dispatched to Inngest",
-        "Kill switch check — settings table is read; if the kill switch is active, the comment is marked failed before any API call is made",
-        "Moderation — Claude Haiku returns a verdict of safe, unsafe, or off-topic; anything not safe halts the pipeline here",
-        "Generation — Claude Sonnet receives current content, the target edit_id, and the suggestion; it calls the update_sections tool and returns a typed patch",
-        "Validation — the patch is run through Zod schemas; bad shapes, invalid enum values, or oversized fields throw and mark the comment failed",
-        "Commit — Octokit creates a branch, writes the patched file to content/sections.json or theme/tokens.json, and opens a PR with message format agent(edit_id): description; auto-merge is enabled",
-        "CI — GitHub Actions inspects every file in the PR diff against an allowlist of content/, theme/, and overrides/; any path outside the allowlist fails the workflow and blocks merge",
-        "Deploy — Vercel rebuilds on merge; ISR with revalidate=60 propagates the update to visitors within 60 seconds"
+        "Suggestion received — your submission is rate-limited by IP and saved to the database with a status of \"queued\"",
+        "Kill switch check — if the owner has paused the pipeline, your suggestion is stopped here before any AI is called",
+        "Moderation — a fast AI model (Claude Haiku) reads your suggestion and decides if it's safe, unsafe, or off-topic; anything not safe is rejected",
+        "Generation — a more capable AI model (Claude Sonnet) reads the current page content and your suggestion, then produces a structured edit",
+        "Validation — the edit is checked against strict rules; if anything is malformed or out of range, the suggestion is marked failed",
+        "Commit — the edit is written to a new branch on GitHub and a pull request is opened automatically",
+        "CI check — GitHub Actions checks every file in the pull request against an allowlist; any file outside the allowed paths blocks the merge",
+        "Deploy — once merged, Vercel rebuilds the site and the change reaches visitors within 60 seconds"
       ],
       "type": "ordered-list",
       "visible": true
