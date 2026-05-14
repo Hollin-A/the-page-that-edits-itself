@@ -9,7 +9,7 @@
     },
     {
       "id": "elevator-pitch",
-      "text": "Every word on this page was suggested by a visitor and applied by an AI agent through a real GitHub pull request. Suggest a change, watch the pipeline run, see the page update.",
+      "text": "This page accepts real visitor suggestions. An AI agent reviews each one, generates a structured patch, and opens a pull request against the repository. If CI passes, the change is auto-merged and Vercel rebuilds the page — all within 30–90 seconds, with no human in the loop.",
       "type": "paragraph",
       "visible": true
     },
