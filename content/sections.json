@@ -14,23 +14,72 @@
       "visible": true
     },
     {
-      "id": "hero-scene",
-      "type": "threejs-scene",
+      "camera": {
+        "fov": 60,
+        "position": [
+          0,
+          0,
+          4
+        ]
+      },
       "height": 420,
-      "camera": { "fov": 60, "position": [0, 0, 4] },
+      "id": "hero-scene",
       "lights": [
-        { "type": "AmbientLight", "intensity": 0.3 },
-        { "type": "PointLight", "intensity": 3, "position": [5, 5, 5], "color": "#6366f1" },
-        { "type": "PointLight", "intensity": 1.5, "position": [-5, -3, -3], "color": "#0ea5e9" }
+        {
+          "intensity": 0.3,
+          "type": "AmbientLight"
+        },
+        {
+          "color": "#6366f1",
+          "intensity": 3,
+          "position": [
+            5,
+            5,
+            5
+          ],
+          "type": "PointLight"
+        },
+        {
+          "color": "#0ea5e9",
+          "intensity": 1.5,
+          "position": [
+            -5,
+            -3,
+            -3
+          ],
+          "type": "PointLight"
+        }
       ],
       "objects": [
         {
+          "animation": {
+            "float": {
+              "amplitude": 0.12,
+              "speed": 0.8
+            },
+            "rotate": [
+              0.002,
+              0.006,
+              0.001
+            ]
+          },
+          "geometry": {
+            "params": [
+              1.2,
+              0
+            ],
+            "type": "Icosahedron"
+          },
           "id": "main-knot",
-          "geometry": { "type": "TorusKnot", "params": [1, 0.3, 128, 16] },
-          "material": { "type": "MeshPhysicalMaterial", "color": "#6366f1", "roughness": 0.15, "metalness": 0.85 },
-          "animation": { "rotate": [0.002, 0.006, 0.001], "float": { "amplitude": 0.12, "speed": 0.8 } }
+          "material": {
+            "color": "#6366f1",
+            "metalness": 0.85,
+            "roughness": 0.15,
+            "type": "MeshPhysicalMaterial"
+          }
         }
       ],
+      "type": "threejs-scene",
       "visible": true
     },
     {
