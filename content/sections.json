@@ -26,11 +26,11 @@
       "id": "hero-scene",
       "lights": [
         {
-          "intensity": 0.3,
+          "intensity": 0.9,
           "type": "AmbientLight"
         },
         {
-          "color": "#6366f1",
+          "color": "#ffffff",
           "intensity": 3,
           "position": [
             5,
@@ -40,8 +40,8 @@
           "type": "PointLight"
         },
         {
-          "color": "#0ea5e9",
-          "intensity": 1.5,
+          "color": "#a5b4fc",
+          "intensity": 3,
           "position": [
             -5,
             -3,
@@ -65,15 +65,19 @@
           },
           "geometry": {
             "params": [
-              1.2,
-              0
+              0.7,
+              0.25,
+              100,
+              16,
+              2,
+              3
             ],
-            "type": "Icosahedron"
+            "type": "TorusKnot"
           },
           "id": "main-knot",
           "material": {
-            "color": "#6366f1",
-            "metalness": 0.85,
+            "color": "#39FF14",
+            "metalness": 0.35,
             "roughness": 0.15,
             "type": "MeshPhysicalMaterial"
           }
