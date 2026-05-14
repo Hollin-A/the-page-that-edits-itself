@@ -2,7 +2,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import EditableElement from '@/components/EditableElement'
 import { SECTION_RENDERERS } from '@/components/sections/registry'
-import type { ThemeTokens, SectionsFile } from '@/lib/schemas'
+import type { ThemeTokens, SectionsFile, ThreeJsSceneSection } from '@/lib/schemas'
 
 export const revalidate = 60
 
@@ -23,9 +23,14 @@ export default function Page() {
   const secondSection = visible[1]
   const isHeroParagraph = isHeroHeading && secondSection?.type === 'paragraph'
 
+  const thirdSection = visible[2]
+  const isHeroScene = isHeroParagraph && thirdSection?.type === 'threejs-scene'
+
   const heroHeading = isHeroHeading ? firstSection : null
   const heroParagraph = isHeroParagraph ? secondSection : null
-  const bodySections = visible.slice(isHeroHeading ? (isHeroParagraph ? 2 : 1) : 0)
+  const heroScene = isHeroScene ? (thirdSection as ThreeJsSceneSection) : null
+  const heroCount = isHeroHeading ? (isHeroParagraph ? (isHeroScene ? 3 : 2) : 1) : 0
+  const bodySections = visible.slice(heroCount)
 
   return (
     <>
@@ -80,6 +85,21 @@ export default function Page() {
             </p>
           </section>
         )}
+
+        {/* ── Hero scene ── full-width Three.js visual zone */}
+        {heroScene && (() => {
+          const SceneRenderer = SECTION_RENDERERS['threejs-scene']
+          return (
+            <EditableElement
+              editId={`section.${heroScene.id}`}
+              tag="div"
+              className="w-full border-b border-white/[0.06]"
+              style={{ height: `${heroScene.height ?? 420}px` }}
+            >
+              <SceneRenderer {...heroScene} />
+            </EditableElement>
+          )
+        })()}
 
         {/* ── Body ── */}
         <main className="flex-1 w-full max-w-2xl mx-auto px-6 sm:px-8 py-20 space-y-12">

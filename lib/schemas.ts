@@ -64,6 +64,71 @@ const QuoteSchema = SectionBaseSchema.extend({
   attribution: z.string().min(1).max(120),
 })
 
+// ---------------------------------------------------------------------------
+// Three.js scene schema
+// ---------------------------------------------------------------------------
+// Declarative JSON description of a WebGL scene rendered by React Three Fiber.
+// The agent edits this config — it never writes JS/shader code.
+
+const ThreeJsLightSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('AmbientLight'),
+    intensity: z.number().min(0).max(5),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  }),
+  z.object({
+    type: z.literal('PointLight'),
+    intensity: z.number().min(0).max(10),
+    position: z.tuple([z.number(), z.number(), z.number()]).optional(),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  }),
+  z.object({
+    type: z.literal('DirectionalLight'),
+    intensity: z.number().min(0).max(10),
+    position: z.tuple([z.number(), z.number(), z.number()]).optional(),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  }),
+])
+
+const ThreeJsObjectSchema = z.object({
+  id: z.string().min(1).max(50),
+  geometry: z.object({
+    type: z.enum(['Box', 'Sphere', 'Torus', 'TorusKnot', 'Icosahedron',
+      'Octahedron', 'Cone', 'Cylinder', 'Dodecahedron', 'Tetrahedron']),
+    params: z.array(z.number()).max(6).optional(),
+  }),
+  material: z.object({
+    type: z.enum(['MeshStandardMaterial', 'MeshPhysicalMaterial',
+      'MeshNormalMaterial', 'MeshBasicMaterial']),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    wireframe: z.boolean().optional(),
+    roughness: z.number().min(0).max(1).optional(),
+    metalness: z.number().min(0).max(1).optional(),
+    opacity: z.number().min(0).max(1).optional(),
+    transparent: z.boolean().optional(),
+  }),
+  position: z.tuple([z.number(), z.number(), z.number()]).optional(),
+  scale: z.number().positive().optional(),
+  animation: z.object({
+    rotate: z.tuple([z.number(), z.number(), z.number()]).optional(),
+    float: z.object({
+      amplitude: z.number().min(0).max(2),
+      speed: z.number().min(0).max(10),
+    }).optional(),
+  }).optional(),
+})
+
+const ThreeJsSceneSchema = SectionBaseSchema.extend({
+  type: z.literal('threejs-scene'),
+  height: z.number().min(100).max(800).default(420),
+  camera: z.object({
+    fov: z.number().min(10).max(120).optional(),
+    position: z.tuple([z.number(), z.number(), z.number()]).optional(),
+  }).optional(),
+  lights: z.array(ThreeJsLightSchema).min(1).max(6),
+  objects: z.array(ThreeJsObjectSchema).min(1).max(8),
+})
+
 export const SectionSchema = z.discriminatedUnion('type', [
   HeadingSchema,
   ParagraphSchema,
@@ -73,6 +138,7 @@ export const SectionSchema = z.discriminatedUnion('type', [
   CodeBlockSchema,
   LinkBlockSchema,
   QuoteSchema,
+  ThreeJsSceneSchema,
 ])
 
 export const SectionsFileSchema = z.object({
@@ -114,7 +180,12 @@ export const UpdateSectionsTool = {
     '- bullet-list: items[] (each max 200, up to 20 items)\n' +
     '- code-block: language, code (max 5000)\n' +
     '- link-block: text (max 200), href (valid URL)\n' +
-    '- quote: text (max 500), attribution (max 120)',
+    '- quote: text (max 500), attribution (max 120)\n' +
+    '- threejs-scene: height (px, 100-800), camera {fov, position[x,y,z]}, lights[], objects[]\n' +
+    '  Each object: id, geometry {type, params[]}, material {type, color, wireframe, roughness, metalness}, position[x,y,z], scale, animation {rotate[x,y,z], float {amplitude, speed}}\n' +
+    '  Geometry types: Box, Sphere, Torus, TorusKnot, Icosahedron, Octahedron, Cone, Cylinder, Dodecahedron, Tetrahedron\n' +
+    '  Material types: MeshStandardMaterial, MeshPhysicalMaterial, MeshNormalMaterial, MeshBasicMaterial\n' +
+    '  Light types: AmbientLight {intensity, color}, PointLight {intensity, position, color}, DirectionalLight {intensity, position, color}',
   input_schema: {
     type: 'object' as const,
     properties: {
@@ -216,6 +287,7 @@ export type BulletListSection = z.infer<typeof BulletListSchema>
 export type CodeBlockSection = z.infer<typeof CodeBlockSchema>
 export type LinkBlockSection = z.infer<typeof LinkBlockSchema>
 export type QuoteSection = z.infer<typeof QuoteSchema>
+export type ThreeJsSceneSection = z.infer<typeof ThreeJsSceneSchema>
 export type ThemeTokens = z.infer<typeof ThemeTokensSchema>
 export type ModerationResult = z.infer<typeof ModerationResultSchema>
 export type Comment = z.infer<typeof CommentSchema>

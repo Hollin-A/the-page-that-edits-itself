@@ -14,6 +14,26 @@
       "visible": true
     },
     {
+      "id": "hero-scene",
+      "type": "threejs-scene",
+      "height": 420,
+      "camera": { "fov": 60, "position": [0, 0, 4] },
+      "lights": [
+        { "type": "AmbientLight", "intensity": 0.3 },
+        { "type": "PointLight", "intensity": 3, "position": [5, 5, 5], "color": "#6366f1" },
+        { "type": "PointLight", "intensity": 1.5, "position": [-5, -3, -3], "color": "#0ea5e9" }
+      ],
+      "objects": [
+        {
+          "id": "main-knot",
+          "geometry": { "type": "TorusKnot", "params": [1, 0.3, 128, 16] },
+          "material": { "type": "MeshPhysicalMaterial", "color": "#6366f1", "roughness": 0.15, "metalness": 0.85 },
+          "animation": { "rotate": [0.002, 0.006, 0.001], "float": { "amplitude": 0.12, "speed": 0.8 } }
+        }
+      ],
+      "visible": true
+    },
+    {
       "id": "pipeline-steps",
       "items": [
         "Suggestion received — your submission is rate-limited by IP and saved to the database with a status of \"queued\"",

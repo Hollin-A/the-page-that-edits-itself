@@ -28,7 +28,8 @@ export default function EditableElement({
   const [popoverPos, setPopoverPos] = useState({ top: 0, right: 0 })
   const ref = useRef<HTMLElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const Tag = tag
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Tag = tag as any
   const { active: xrayActive, focusedId, comments, lockedEditIds, activate } = useXRay()
   const commentCount = comments.filter((c) => c.edit_id === editId).length
   const isFocused = focusedId === editId
