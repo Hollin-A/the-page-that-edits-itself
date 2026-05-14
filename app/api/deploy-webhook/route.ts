@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
+import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 
 // Auth: GitHub Actions sends DEPLOY_HOOK_SECRET as a Bearer token.
@@ -39,6 +40,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  console.log('[deploy-webhook] Marked merged comments as deployed')
+  // Bust the ISR cache so the next server-component fetch returns fresh content.
+  // This runs before Supabase Realtime fires on clients, so by the time
+  // router.refresh() is called in XRayProvider the new page is already cached.
+  revalidatePath('/')
+
+  console.log('[deploy-webhook] Marked merged comments as deployed, revalidated /')
   return NextResponse.json({ ok: true })
 }

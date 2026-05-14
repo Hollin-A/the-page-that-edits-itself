@@ -9,6 +9,7 @@ import {
   useState,
   ReactNode,
 } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import type { Comment } from '@/lib/schemas'
 import XRayPill from './XRayPill'
@@ -49,6 +50,7 @@ export default function XRayProvider({ children }: { children: ReactNode }) {
   const [comments, setComments] = useState<Comment[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
   const supabase = useRef(supabaseBrowser)
+  const router = useRouter()
 
   // Shared Supabase subscription — consumed by ActivityFeed and XRaySidebar
   useEffect(() => {
@@ -67,6 +69,15 @@ export default function XRayProvider({ children }: { children: ReactNode }) {
       .channel('xray-feed')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, (payload) => {
         const updated = payload.new as Comment
+
+        // When a comment becomes deployed the Vercel build is live and the
+        // ISR cache has already been invalidated by the webhook handler.
+        // Soft-refresh server components so visitors see the new content
+        // without needing a manual reload.
+        if (updated.status === 'deployed') {
+          router.refresh()
+        }
+
         setComments((prev) => {
           const idx = prev.findIndex((c) => c.id === updated.id)
           if (idx !== -1) {
@@ -80,7 +91,7 @@ export default function XRayProvider({ children }: { children: ReactNode }) {
       .subscribe()
 
     return () => { client.removeChannel(channel) }
-  }, [])
+  }, [router])
 
   // Read ?xray=<edit-id> on mount
   useEffect(() => {
