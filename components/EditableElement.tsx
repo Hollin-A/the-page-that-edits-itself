@@ -72,7 +72,7 @@ export default function EditableElement({
                 ? 'outline-[var(--accent)] bg-[var(--accent)]/5'
                 : 'outline-neutral-300 hover:outline-neutral-400'
             }`
-          : ''
+          : 'ring-1 ring-transparent hover:ring-[var(--accent)]/[0.28] rounded-sm transition-shadow'
       }`}
       style={style}
     >
@@ -97,7 +97,7 @@ export default function EditableElement({
 
       {/* Lock indicator — shown when element is being processed */}
       {!xrayActive && isLocked && (
-        <span className="absolute top-2 right-2 hidden group-hover:flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-full pl-1.5 pr-2.5 py-0.5 z-10 whitespace-nowrap shadow-sm">
+        <span className="absolute top-2 right-2 hidden group-hover:flex items-center gap-1.5 bg-[#0e0e14] border border-amber-500/30 text-amber-400 rounded-full pl-1.5 pr-2.5 py-0.5 z-10 whitespace-nowrap shadow-sm">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
           <span className="text-[10px] font-medium">Updating…</span>
         </span>
@@ -109,7 +109,7 @@ export default function EditableElement({
           ref={buttonRef}
           onClick={handleOpen}
           aria-label={`Suggest a change to ${editId}`}
-          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white border border-neutral-300 hidden group-hover:flex items-center justify-center shadow-sm hover:bg-[var(--accent)] hover:text-white hover:border-[var(--accent)] text-neutral-400 transition-colors z-10"
+          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#0e0e14] border border-[var(--accent)]/30 text-[var(--accent)]/70 hidden group-hover:flex items-center justify-center shadow-sm hover:bg-[var(--accent)] hover:text-white hover:border-[var(--accent)] transition-colors z-10"
         >
           <ChatIcon />
         </button>
