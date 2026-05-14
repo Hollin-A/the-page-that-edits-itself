@@ -9,7 +9,7 @@
     },
     {
       "id": "elevator-pitch",
-      "text": "This page accepts real visitor suggestions via a POST to /api/comment. An Inngest function orchestrates the pipeline: Claude Haiku moderates the suggestion, Claude Sonnet generates a structured patch validated by Zod schemas, Octokit commits the patch and opens a pull request, CI runs an allowlist check on every changed file path, and GitHub auto-merges on pass. Vercel rebuilds on merge. End-to-end latency is 30–90 seconds. No human is in the loop unless a comment is held for owner review.",
+      "text": "Any visitor can suggest a change to this page. An AI moderates the suggestion, a second AI generates the edit, and the result becomes a real GitHub pull request that CI checks, auto-merges, and Vercel deploys — all within 30–90 seconds. No human in the loop.",
       "type": "paragraph",
       "visible": true
     },
