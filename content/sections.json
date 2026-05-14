@@ -65,10 +65,14 @@
           },
           "geometry": {
             "params": [
-              1.2,
-              0
+              0.7,
+              0.25,
+              100,
+              16,
+              2,
+              3
             ],
-            "type": "Icosahedron"
+            "type": "TorusKnot"
           },
           "id": "main-knot",
           "material": {
