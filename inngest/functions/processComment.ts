@@ -81,14 +81,18 @@ export const processComment = inngest.createFunction(
         max_tokens: 200,
         system:
           'You moderate visitor suggestions for a self-editing website about an agentic workflow system. ' +
-          'The site explains how an AI agent applies visitor suggestions through real GitHub pull requests. ' +
+          'The site has text sections (headings, paragraphs, lists, callouts, code blocks) AND a live 3D scene rendered with Three.js/WebGL. ' +
+          'Suggestions about the 3D scene are fully on-topic: changing geometry (sphere, icosahedron, torus, box, cone, etc.), ' +
+          'material properties (colour, wireframe, metalness, roughness, opacity), ' +
+          'lighting (colours, intensity, position), animation (rotation speed, floating), ' +
+          'or adding/removing objects in the scene. ' +
           'Content about AI agents, pipelines, moderation, safety, code, pull requests, and technical ' +
-          'concepts is fully on-topic for this site — do not reject it as off-topic. ' +
-          'Vague or unclear suggestions (e.g. "explain more", "add details") are safe — the generation ' +
+          'concepts is fully on-topic — do not reject it as off-topic. ' +
+          'Vague or unclear suggestions (e.g. "explain more", "add details", "make it look cooler") are safe — the generation ' +
           'step will interpret them. Only reject suggestions that are clearly harmful. ' +
-          "Classify as 'safe' (any reasonable content, copy, or structural suggestion), " +
+          "Classify as 'safe' (any reasonable content, copy, structural, or visual suggestion), " +
           "'unsafe' (slurs, threats, personal attacks, illegal content, spam), or " +
-          "'off-topic' (completely unrelated to websites, writing, or design — e.g. asking for stock tips). " +
+          "'off-topic' (completely unrelated to websites, writing, design, or 3D visuals — e.g. asking for stock tips). " +
           'When in doubt, classify as safe. ' +
           'Respond with JSON only: {"verdict": "...", "reason": "..."}',
         messages: [{ role: 'user', content: comment.text }],
