@@ -43,7 +43,7 @@ export default function Page() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[400px] rounded-full blur-[120px] opacity-[0.04] bg-cyan-500" />
       </div>
 
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative min-h-screen flex flex-col overflow-x-hidden">
 
         {/* ── Nav ── */}
         <header className="w-full px-8 py-4 flex items-center justify-between border-b border-white/[0.06]">
