@@ -16,21 +16,18 @@ export default function Page() {
 
   const visible = sections.filter(s => s.visible)
 
-  // Hoist the first h1 + its immediately following paragraph into the hero zone.
-  // Everything else falls into the body column.
+  // Hero zone: the first h1 + the first threejs-scene found in positions 1–3.
+  // Everything else (including any paragraph after the heading) goes to the body.
   const firstSection = visible[0]
   const isHeroHeading = firstSection?.type === 'heading' && firstSection.level === 1
-  const secondSection = visible[1]
-  const isHeroParagraph = isHeroHeading && secondSection?.type === 'paragraph'
-
-  const thirdSection = visible[2]
-  const isHeroScene = isHeroParagraph && thirdSection?.type === 'threejs-scene'
 
   const heroHeading = isHeroHeading ? firstSection : null
-  const heroParagraph = isHeroParagraph ? secondSection : null
-  const heroScene = isHeroScene ? (thirdSection as ThreeJsSceneSection) : null
-  const heroCount = isHeroHeading ? (isHeroParagraph ? (isHeroScene ? 3 : 2) : 1) : 0
-  const bodySections = visible.slice(heroCount)
+  const heroScene = isHeroHeading
+    ? (visible.slice(1, 4).find(s => s.type === 'threejs-scene') as ThreeJsSceneSection | undefined) ?? null
+    : null
+
+  const heroIds = new Set([heroHeading?.id, heroScene?.id].filter(Boolean))
+  const bodySections = visible.filter(s => !heroIds.has(s.id))
 
   return (
     <>
@@ -62,44 +59,42 @@ export default function Page() {
           </EditableElement>
         </header>
 
-        {/* ── Hero ── */}
+        {/* ── Hero ── title left, Three.js scene right ── */}
         {heroHeading && (
-          <section className="w-full px-6 sm:px-12 pt-28 pb-24 border-b border-white/[0.06] flex flex-col items-center text-center">
-            <EditableElement editId={`section.${heroHeading.id}`} tag="div" className="w-full max-w-4xl">
-              <h1 className="text-5xl sm:text-6xl lg:text-[4.5rem] font-bold tracking-tight text-white leading-[1.08] mb-6">
-                {heroHeading.text}
-              </h1>
-            </EditableElement>
+          <section className="w-full flex flex-col md:flex-row border-b border-white/[0.06]">
 
-            {heroParagraph && (
-              <EditableElement editId={`section.${heroParagraph.id}`} tag="div" className="max-w-xl">
-                <p className="text-lg sm:text-xl text-white/45 leading-relaxed">
-                  {heroParagraph.text}
-                </p>
+            {/* Left: title */}
+            <div
+              className="flex-1 flex flex-col justify-center px-8 sm:px-16 py-16 md:py-0"
+              style={{ minHeight: `${heroScene?.height ?? 420}px` }}
+            >
+              <EditableElement editId={`section.${heroHeading.id}`} tag="div">
+                <h1 className="text-4xl sm:text-5xl xl:text-[4rem] font-bold tracking-tight text-white leading-[1.08]">
+                  {heroHeading.text}
+                </h1>
               </EditableElement>
-            )}
+              <p className="mt-8 text-xs text-white/20 font-mono">
+                hover any element to suggest a change
+              </p>
+            </div>
 
-            {/* Suggest hint */}
-            <p className="mt-10 text-xs text-white/20 font-mono">
-              hover any element to suggest a change
-            </p>
+            {/* Right: Three.js scene */}
+            {heroScene && (() => {
+              const SceneRenderer = SECTION_RENDERERS['threejs-scene']
+              return (
+                <EditableElement
+                  editId={`section.${heroScene.id}`}
+                  tag="div"
+                  className="w-full md:w-[55%] shrink-0"
+                  style={{ height: `${heroScene.height ?? 420}px` }}
+                >
+                  <SceneRenderer {...heroScene} />
+                </EditableElement>
+              )
+            })()}
+
           </section>
         )}
-
-        {/* ── Hero scene ── full-width Three.js visual zone */}
-        {heroScene && (() => {
-          const SceneRenderer = SECTION_RENDERERS['threejs-scene']
-          return (
-            <EditableElement
-              editId={`section.${heroScene.id}`}
-              tag="div"
-              className="w-full border-b border-white/[0.06]"
-              style={{ height: `${heroScene.height ?? 420}px` }}
-            >
-              <SceneRenderer {...heroScene} />
-            </EditableElement>
-          )
-        })()}
 
         {/* ── Body ── */}
         <main className="flex-1 w-full max-w-2xl mx-auto px-6 sm:px-8 py-20 space-y-12">
