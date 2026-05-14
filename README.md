@@ -1,4 +1,4 @@
-# The site that edits itself
+# The page that edits itself
 
 A Next.js site where any visitor can suggest a change to the page content. An AI agent moderates the suggestion, generates a structured patch, opens a real GitHub pull request, and Vercel redeploys. The page updates in front of visitors without a manual refresh. Every change is traceable to a PR.
 

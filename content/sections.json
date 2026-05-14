@@ -3,7 +3,7 @@
     {
       "id": "main-heading",
       "level": 1,
-      "text": "The site that edits itself",
+      "text": "The page that edits itself",
       "type": "heading",
       "visible": true
     },
@@ -293,7 +293,7 @@
       "visible": true
     },
     {
-      "href": "https://github.com/Hollin-A/agentic-workflow-prototype/pulls",
+      "href": "https://github.com/Hollin-A/the-page-that-edits-itself/pulls",
       "id": "see-prs",
       "text": "Every change has a real pull request →",
       "type": "link-block",
