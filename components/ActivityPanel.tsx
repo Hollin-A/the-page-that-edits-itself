@@ -31,6 +31,7 @@ const STATUS_BADGE: Record<Comment['status'], string> = {
   generating: '…',
   held: '⏸',
   merged: '✓',
+  deployed: '✦',
   rejected: '×',
   failed: '!',
 }
@@ -41,16 +42,19 @@ const STATUS_BADGE_COLOR: Record<Comment['status'], string> = {
   generating: 'bg-blue-50 text-blue-500',
   held: 'bg-purple-50 text-purple-600',
   merged: 'bg-green-50 text-green-600',
+  deployed: 'bg-teal-50 text-teal-600',
   rejected: 'bg-red-100 text-red-600',
   failed: 'bg-orange-100 text-orange-600',
 }
 
 const STATUS_LABEL: Partial<Record<Comment['status'], string>> = {
+  deployed: 'Live',
   rejected: 'Rejected',
   failed: 'Failed',
 }
 
 const ROW_BORDER: Partial<Record<Comment['status'], string>> = {
+  deployed: 'border-l-2 border-l-teal-400',
   rejected: 'border-l-2 border-l-red-400',
   failed: 'border-l-2 border-l-orange-400',
 }
@@ -65,13 +69,13 @@ export default function ActivityPanel() {
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
   const appliedToday = comments.filter(
-    (c) => c.status === 'merged' && new Date(c.updated_at) >= todayStart
+    (c) => ['merged', 'deployed'].includes(c.status) && new Date(c.updated_at) >= todayStart
   ).length
 
-  const moderated = comments.filter((c) => ['merged', 'rejected'].includes(c.status))
+  const moderated = comments.filter((c) => ['merged', 'deployed', 'rejected'].includes(c.status))
   const passRate =
     moderated.length > 0
-      ? Math.round((moderated.filter((c) => c.status === 'merged').length / moderated.length) * 100)
+      ? Math.round((moderated.filter((c) => ['merged', 'deployed'].includes(c.status)).length / moderated.length) * 100)
       : null
 
   return (

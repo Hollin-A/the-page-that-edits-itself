@@ -13,6 +13,7 @@ const STATUS_DOT: Record<Comment['status'], string> = {
   generating: 'bg-blue-400 animate-pulse',
   held: 'bg-purple-400',
   merged: 'bg-green-400',
+  deployed: 'bg-teal-400',
   rejected: 'bg-red-400',
   failed: 'bg-orange-400',
 }

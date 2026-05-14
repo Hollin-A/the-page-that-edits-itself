@@ -21,6 +21,7 @@ const STATUS_DOT: Record<Comment['status'], string> = {
   generating: 'bg-blue-400 animate-pulse',
   held: 'bg-purple-400',
   merged: 'bg-green-400',
+  deployed: 'bg-teal-400',
   rejected: 'bg-red-400',
   failed: 'bg-orange-400',
 }
@@ -31,6 +32,7 @@ const STATUS_LABEL: Record<Comment['status'], string> = {
   generating: 'Generating',
   held: 'Held',
   merged: 'Merged',
+  deployed: 'Deployed',
   rejected: 'Rejected',
   failed: 'Failed',
 }
@@ -49,7 +51,7 @@ function matchesFilter(c: Comment, filter: Filter): boolean {
   if (filter === 'all') return true
   if (filter === 'active') return ['queued', 'moderating', 'generating'].includes(c.status)
   if (filter === 'held') return c.status === 'held'
-  if (filter === 'merged') return c.status === 'merged'
+  if (filter === 'merged') return ['merged', 'deployed'].includes(c.status)
   if (filter === 'rejected') return ['rejected', 'failed'].includes(c.status)
   return true
 }
