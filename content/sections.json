@@ -69,6 +69,22 @@
           },
           "position": [0, 0, 0],
           "scale": 1
+        },
+        {
+          "animation": {
+            "float": { "amplitude": 0.08, "speed": 1.6 },
+            "rotate": [0.004, 0.002, 0.006]
+          },
+          "geometry": { "params": [0.28, 32, 32], "type": "Sphere" },
+          "id": "orbiting-sphere",
+          "material": {
+            "color": "#00EFFF",
+            "metalness": 0.7,
+            "roughness": 0.1,
+            "type": "MeshPhysicalMaterial"
+          },
+          "position": [2.2, 0.4, 0],
+          "scale": 1
         }
       ],
       "type": "threejs-scene",
