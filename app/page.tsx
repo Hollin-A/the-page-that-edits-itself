@@ -4,6 +4,7 @@ import EditableElement from '@/components/EditableElement'
 import AnimatedSection from '@/components/AnimatedSection'
 import { SECTION_RENDERERS } from '@/components/sections/registry'
 import ContributorsSection from '@/components/ContributorsSection'
+import MobileEditingBanner from '@/components/MobileEditingBanner'
 import type { ThemeTokens, SectionsFile, ThreeJsSceneSection } from '@/lib/schemas'
 
 export const revalidate = 60
@@ -122,6 +123,7 @@ export default function Page() {
         <ContributorsSection />
 
       </div>
+      <MobileEditingBanner />
     </>
   )
 }
