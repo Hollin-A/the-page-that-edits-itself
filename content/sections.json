@@ -3,7 +3,7 @@
     {
       "id": "main-heading",
       "level": 1,
-      "text": "The site that edits itself",
+      "text": "The page that edits itself",
       "type": "heading",
       "visible": true
     },
@@ -169,7 +169,7 @@
       "visible": true
     },
     {
-      "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist (content/, theme/). The check runs on GitHub's infrastructure, independent of the agent pipeline. Even a malicious or malformed patch cannot reach application code — the CI wall is enforced at the repository level, not inside the AI models.",
+      "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist (content/, theme/). This check runs on GitHub's infrastructure, independent of the agent pipeline — the CI wall is enforced at the repository level, not inside the AI models.",
       "id": "safety-callout",
       "title": "The agent cannot break the site",
       "tone": "info",
@@ -186,17 +186,17 @@
     {
       "id": "safety-layers-list",
       "items": [
-        "Zod schema validation — the agent's output is validated against strict schemas before any commit; bad shapes, missing required fields, and out-of-range values are all caught here",
-        "Element locking — while a suggestion is in-flight, its target is locked; further submissions for the same element return HTTP 409 until the pipeline resolves",
-        "Kill switch — a single setting in the database halts the pipeline before any AI call; no redeploy needed",
-        "Anthropic spend cap — a hard monthly limit in the Anthropic console; when reached, the API returns errors and the pipeline marks suggestions failed",
-        "Held-comment queue — low-confidence or sensitive outputs are held for owner review; on approval, the patch is re-generated against current file state"
+        "Zod schema validation — bad shapes, missing fields, and out-of-range values are caught before any commit",
+        "Element locking — further submissions for the same element return HTTP 409 while a suggestion is in-flight",
+        "Kill switch — a single setting halts the pipeline before any AI call; no redeploy needed",
+        "Anthropic spend cap — a hard monthly limit; when reached, the pipeline marks suggestions failed",
+        "Held-comment queue — low-confidence outputs are held for owner review before re-generating against current state"
       ],
       "type": "bullet-list",
       "visible": true
     },
     {
-      "body": "The agent can rewrite text, split or merge sections, reorder the page, add new typed sections, or hide existing ones — all by editing a JSON array. It cannot write arbitrary HTML, invent new section types, or touch application code. Its output is validated against strict Zod schemas before any commit, and only content/ and theme/ files are ever in scope.",
+      "body": "The agent can rewrite text, split or merge sections, reorder the page, add new typed sections, or hide existing ones. It cannot write arbitrary HTML, invent new section types, or touch application code. Output is validated against strict Zod schemas before any commit.",
       "id": "agent-scope",
       "title": "What the agent can and cannot do",
       "tone": "warn",
@@ -256,11 +256,11 @@
     {
       "id": "try-suggestions",
       "items": [
-        "\"Split the pipeline steps into before and after the PR opens\"",
+        "\"Rewrite the opening paragraph for a non-technical audience\"",
         "\"Add a section about what happens when a suggestion is rejected\"",
         "\"Merge the two safety sections into one\"",
-        "\"Move the callout to just before the pipeline steps\"",
-        "\"Rewrite the opening paragraph for a non-technical audience\""
+        "\"Change the 3D shape from a Dodecahedron to a TorusKnot\"",
+        "\"Add a second orbiting object to the 3D scene\""
       ],
       "type": "bullet-list",
       "visible": true
@@ -279,9 +279,9 @@
       "visible": true
     },
     {
-      "attribution": "docs/system-reference.md — on what this workflow actually does",
+      "attribution": "docs/system-reference.md",
       "id": "capability-quote",
-      "text": "A suggestion can split a paragraph into three, reorder sections, add a callout, or remove a section entirely. A pure database cannot rearrange page structure. Every change has a real GitHub PR, real CI, and a real deploy — because real work is happening at each step.",
+      "text": "Every change has a real GitHub PR, real CI, and a real deploy — because real work is happening at each step.",
       "type": "quote",
       "visible": true
     },
@@ -293,7 +293,7 @@
       "visible": true
     },
     {
-      "href": "https://github.com/Hollin-A/agentic-workflow-prototype/pulls",
+      "href": "https://github.com/Hollin-A/the-page-that-edits-itself/pulls",
       "id": "see-prs",
       "text": "Every change has a real pull request →",
       "type": "link-block",
