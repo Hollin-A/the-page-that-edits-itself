@@ -9,8 +9,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.6
+        "duration": 0.6,
+        "preset": "fade-up"
       },
       "id": "elevator-pitch",
       "text": "Any visitor can suggest a change to this page. An AI moderates the suggestion, a second AI generates the edit, and the result becomes a real GitHub pull request that CI checks, auto-merges, and Vercel deploys — all within 30–90 seconds. No human in the loop.",
@@ -125,8 +125,8 @@
     },
     {
       "animation": {
-        "preset": "zoom-in",
-        "duration": 0.6
+        "duration": 0.6,
+        "preset": "zoom-in"
       },
       "id": "pipeline-stats",
       "stats": [
@@ -152,8 +152,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.6
+        "duration": 0.6,
+        "preset": "fade-up"
       },
       "id": "pipeline-workflow",
       "steps": [
@@ -183,8 +183,8 @@
     },
     {
       "animation": {
-        "preset": "slide-left",
-        "duration": 0.55
+        "duration": 0.55,
+        "preset": "fade-up"
       },
       "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist (content/, theme/). This check runs on GitHub's infrastructure, independent of the agent pipeline — the CI wall is enforced at the repository level, not inside the AI models.",
       "id": "safety-callout",
@@ -195,8 +195,8 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
-        "duration": 0.4
+        "duration": 0.4,
+        "preset": "fade-in"
       },
       "id": "safety-layers-heading",
       "level": 3,
@@ -206,8 +206,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "delay": 0.1
+        "delay": 0.1,
+        "preset": "fade-up"
       },
       "id": "safety-layers-list",
       "items": [
@@ -222,8 +222,8 @@
     },
     {
       "animation": {
-        "preset": "slide-left",
-        "duration": 0.55
+        "duration": 0.55,
+        "preset": "slide-left"
       },
       "body": "The agent can rewrite text, split or merge sections, reorder the page, add new typed sections, or hide existing ones. It cannot write arbitrary HTML, invent new section types, or touch application code. Output is validated against strict Zod schemas before any commit.",
       "id": "agent-scope",
@@ -234,8 +234,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "fade-up"
       },
       "id": "tech-stack",
       "items": [
@@ -275,8 +275,8 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "fade-in"
       },
       "id": "try-heading",
       "level": 2,
@@ -295,8 +295,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "delay": 0.1
+        "delay": 0.1,
+        "preset": "fade-up"
       },
       "id": "try-suggestions",
       "items": [
@@ -330,8 +330,8 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
-        "duration": 0.8
+        "duration": 0.8,
+        "preset": "fade-in"
       },
       "attribution": "docs/system-reference.md",
       "id": "capability-quote",
@@ -341,9 +341,9 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
+        "delay": 0.15,
         "duration": 0.8,
-        "delay": 0.15
+        "preset": "fade-in"
       },
       "attribution": "docs/system-reference.md",
       "id": "closing-quote",
@@ -353,8 +353,8 @@
     },
     {
       "animation": {
-        "preset": "zoom-in",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "zoom-in"
       },
       "href": "https://github.com/Hollin-A/the-page-that-edits-itself/pulls",
       "id": "see-prs",
