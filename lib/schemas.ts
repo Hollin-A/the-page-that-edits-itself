@@ -166,8 +166,7 @@ const ThreeJsObjectSchema = z.object({
   id: z.string().min(1).max(50),
   geometry: z.object({
     type: z.enum(['Box', 'Sphere', 'Torus', 'TorusKnot', 'Icosahedron',
-      'Octahedron', 'Cone', 'Cylinder', 'Dodecahedron', 'Tetrahedron',
-      'LightningBolt']),
+      'Octahedron', 'Cone', 'Cylinder', 'Dodecahedron', 'Tetrahedron']),
     params: z.array(z.number()).max(6).optional(),
   }),
   material: z.object({
@@ -262,7 +261,7 @@ export const UpdateSectionsTool = {
     '- tech-stack: items[] (each with name (max 40), description (max 120), optional href URL, 1–12 items)\n' +
     '- threejs-scene: height (px, 100-800), camera {fov, position[x,y,z]}, lights[], objects[]\n' +
     '  Each object: id, geometry {type, params[]}, material {type, color, wireframe, roughness, metalness}, position[x,y,z], scale, animation {rotate[x,y,z], float {amplitude, speed}}\n' +
-    '  Geometry types: Box, Sphere, Torus, TorusKnot, Icosahedron, Octahedron, Cone, Cylinder, Dodecahedron, Tetrahedron, LightningBolt\n' +
+    '  Geometry types: Box, Sphere, Torus, TorusKnot, Icosahedron, Octahedron, Cone, Cylinder, Dodecahedron, Tetrahedron\n' +
     '  Material types: MeshStandardMaterial, MeshPhysicalMaterial, MeshNormalMaterial, MeshBasicMaterial\n' +
     '  Light types: AmbientLight {intensity, color}, PointLight {intensity, position, color}, DirectionalLight {intensity, position, color}\n\n' +
     'ANIMATION (optional field on every section):\n' +
