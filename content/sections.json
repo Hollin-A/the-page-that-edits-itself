@@ -183,10 +183,78 @@
     },
     {
       "animation": {
+        "preset": "fade-in",
+        "duration": 0.5
+      },
+      "id": "try-heading",
+      "level": 2,
+      "text": "Try it yourself",
+      "type": "heading",
+      "visible": true
+    },
+    {
+      "animation": {
+        "preset": "fade-up",
+        "duration": 0.5
+      },
+      "id": "threejs-invite",
+      "text": "The 3D shape on the right is editable too — try suggesting a different geometry, color, material, or animation. Even the accent color running through the whole site is fair game.",
+      "type": "paragraph",
+      "visible": true
+    },
+    {
+      "animation": {
+        "preset": "fade-up"
+      },
+      "id": "how-to-use",
+      "text": "Hover any element on this page — a small pencil icon appears inside it. Click it, type a suggestion in plain English, and submit. The pipeline runs in the background; the page updates itself when the deploy lands.",
+      "type": "paragraph",
+      "visible": true
+    },
+    {
+      "animation": {
+        "preset": "fade-up",
+        "delay": 0.1
+      },
+      "id": "try-suggestions",
+      "items": [
+        "\"Rewrite the opening paragraph in a more casual voice\"",
+        "\"Change the accent color to a warm orange\"",
+        "\"Change the 3D shape to a TorusKnot\"",
+        "\"Make the stats section zoom in slower\"",
+        "\"Split the pipeline steps into two groups — before and after the PR opens\"",
+        "\"Add a section about what kinds of suggestions work best\""
+      ],
+      "type": "bullet-list",
+      "visible": true
+    },
+    {
+      "animation": {
+        "preset": "fade-up"
+      },
+      "id": "what-makes-suggestion",
+      "text": "The best suggestions are structural — splitting a section, merging two into one, reordering, changing a section's type, or adjusting an animation. Rewrites work well too. What won't work: requests to add images, embed videos, or change how the site behaves. The agent works within a fixed set of section types and cannot touch application code.",
+      "type": "paragraph",
+      "visible": true
+    },
+    {
+      "animation": {
         "preset": "slide-left",
         "duration": 0.55
       },
-      "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist (content/, theme/). This check runs on GitHub's infrastructure, independent of the agent pipeline — the CI wall is enforced at the repository level, not inside the AI models.",
+      "body": "A suggestion is rejected if it's off-topic, potentially harmful, or outside the agent's scope. Claude Haiku reviews every submission first, so rejections are fast. If your suggestion fails, try rephrasing it as a structural edit — rewrite this section, add a section about X, change the 3D shape.",
+      "id": "rejected-explanation",
+      "title": "Suggestions can be rejected — that's expected",
+      "tone": "info",
+      "type": "callout",
+      "visible": true
+    },
+    {
+      "animation": {
+        "preset": "slide-left",
+        "duration": 0.55
+      },
+      "body": "A GitHub Actions workflow checks every agent pull request against a strict allowlist. Only content/ and theme/ files can be touched — no application code, no config files. The check runs on GitHub's infrastructure, independent of the AI pipeline.",
       "id": "safety-callout",
       "title": "The agent cannot break the site",
       "tone": "info",
@@ -195,12 +263,24 @@
     },
     {
       "animation": {
+        "preset": "fade-up",
+        "duration": 0.5
+      },
+      "body": "The agent can rewrite text, split or merge sections, reorder the page, change animation presets, and adjust the 3D scene. It cannot write HTML, invent new section types, or touch application code. What you see on this page is everything the agent can change.",
+      "id": "agent-scope",
+      "title": "What the agent can and cannot do",
+      "tone": "warn",
+      "type": "callout",
+      "visible": true
+    },
+    {
+      "animation": {
         "preset": "fade-in",
         "duration": 0.4
       },
-      "id": "safety-layers-heading",
-      "level": 3,
-      "text": "Other independent safety layers",
+      "id": "for-developers-heading",
+      "level": 2,
+      "text": "Under the hood",
       "type": "heading",
       "visible": true
     },
@@ -218,18 +298,6 @@
         "Held-comment queue — low-confidence outputs are held for owner review before re-generating against current state"
       ],
       "type": "bullet-list",
-      "visible": true
-    },
-    {
-      "animation": {
-        "preset": "slide-left",
-        "duration": 0.55
-      },
-      "body": "The agent can rewrite text, split or merge sections, reorder the page, add new typed sections, or hide existing ones. It cannot write arbitrary HTML, invent new section types, or touch application code. Output is validated against strict Zod schemas before any commit.",
-      "id": "agent-scope",
-      "title": "What the agent can and cannot do",
-      "tone": "warn",
-      "type": "callout",
       "visible": true
     },
     {
@@ -275,38 +343,11 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
-        "duration": 0.5
-      },
-      "id": "try-heading",
-      "level": 2,
-      "text": "Try it yourself",
-      "type": "heading",
-      "visible": true
-    },
-    {
-      "animation": {
         "preset": "fade-up"
       },
-      "id": "how-to-use",
-      "text": "Hover any element on this page — a small icon appears in the corner. Click it, type a suggestion in plain English, and submit. The pipeline runs in the background; the page updates itself when the deploy lands.",
+      "id": "threejs-explainer",
+      "text": "The 3D scene is a declarative JSON config — geometry type, material properties, lighting, and animation parameters. The agent edits the config; it never writes shader code. React Three Fiber reads the JSON and renders it. The same pattern applies to the whole page: the agent manipulates structured data, and registered components handle rendering.",
       "type": "paragraph",
-      "visible": true
-    },
-    {
-      "animation": {
-        "preset": "fade-up",
-        "delay": 0.1
-      },
-      "id": "try-suggestions",
-      "items": [
-        "\"Rewrite the opening paragraph for a non-technical audience\"",
-        "\"Add a section about what happens when a suggestion is rejected\"",
-        "\"Merge the two safety sections into one\"",
-        "\"Change the 3D shape from a Dodecahedron to a TorusKnot\"",
-        "\"Add a second orbiting object to the 3D scene\""
-      ],
-      "type": "bullet-list",
       "visible": true
     },
     {
@@ -333,7 +374,7 @@
         "preset": "fade-in",
         "duration": 0.8
       },
-      "attribution": "docs/system-reference.md",
+      "attribution": "— on what makes this different from a database",
       "id": "capability-quote",
       "text": "Every change has a real GitHub PR, real CI, and a real deploy — because real work is happening at each step.",
       "type": "quote",
@@ -345,7 +386,7 @@
         "duration": 0.8,
         "delay": 0.15
       },
-      "attribution": "docs/system-reference.md",
+      "attribution": "— guiding principle",
       "id": "closing-quote",
       "text": "The thing is interesting because it's real, not because it claims to be.",
       "type": "quote",
@@ -359,6 +400,18 @@
       "href": "https://github.com/Hollin-A/the-page-that-edits-itself/pulls",
       "id": "see-prs",
       "text": "Every change has a real pull request →",
+      "type": "link-block",
+      "visible": true
+    },
+    {
+      "animation": {
+        "preset": "zoom-in",
+        "duration": 0.5,
+        "delay": 0.1
+      },
+      "href": "https://github.com/Hollin-A/the-page-that-edits-itself",
+      "id": "repo-link",
+      "text": "Read the source code →",
       "type": "link-block",
       "visible": true
     }
