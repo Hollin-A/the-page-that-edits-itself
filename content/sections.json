@@ -142,108 +142,6 @@
       "visible": true
     },
     {
-      "id": "how-suggestions-work-heading",
-      "level": 2,
-      "text": "How a suggestion changes this page",
-      "type": "heading",
-      "visible": true
-    },
-    {
-      "id": "how-suggestions-intro",
-      "text": "Every element on this page is editable. Hover any section and click the icon that appears — a text box lets you describe the change you want in plain English. Here's exactly what happens the moment you submit:",
-      "type": "paragraph",
-      "visible": true
-    },
-    {
-      "id": "suggestion-workflow",
-      "steps": [
-        {
-          "description": "e.g. \"Rewrite the intro to be more casual\" — targeted at a specific element on the page. The pipeline logs it and rate-checks your IP.",
-          "title": "You type a suggestion"
-        },
-        {
-          "description": "Claude Haiku reviews the suggestion for safety and relevance. Off-topic or unsafe content is rejected here, cheaply, before any heavy lifting.",
-          "title": "AI moderates it"
-        },
-        {
-          "description": "Claude Sonnet reads the full page content and your suggestion, then calls update_sections or update_theme to produce a structured diff — no free-form code, just typed data.",
-          "title": "AI generates the patch"
-        },
-        {
-          "description": "Octokit writes the patch to a new branch and opens a pull request on GitHub. Auto-merge is enabled. You can read the diff right now in the repo.",
-          "title": "A real PR is opened"
-        },
-        {
-          "description": "GitHub Actions verifies only allowlisted files were touched (content/, theme/). Any file outside that list blocks the merge — enforced at the repo level, not inside the AI.",
-          "title": "CI checks the change"
-        },
-        {
-          "description": "On merge, Vercel rebuilds the site. Within 30–90 seconds of your suggestion, the live page reflects the change — pushed to every open tab in real time.",
-          "title": "Vercel rebuilds and deploys"
-        }
-      ],
-      "type": "workflow",
-      "visible": true
-    },
-    {
-      "id": "example-changes-heading",
-      "level": 3,
-      "text": "What kinds of changes are possible?",
-      "type": "heading",
-      "visible": true
-    },
-    {
-      "id": "example-changes-intro",
-      "text": "The agent works on structured page data — not raw HTML. It can reshape the page in several ways:",
-      "type": "paragraph",
-      "visible": true
-    },
-    {
-      "id": "example-changes-list",
-      "items": [
-        "Rewrite the text of any section — tone, length, technical depth, voice",
-        "Split one section into multiple (e.g. a long paragraph → intro + callout + list)",
-        "Merge several sections into one",
-        "Reorder sections on the page",
-        "Add a new section of any registered type — callout, stat row, code block, quote, and more",
-        "Hide a section without deleting it",
-        "Change a section's type (e.g. paragraph → callout)",
-        "Edit the 3D scene — swap geometry, change colors, add orbiting objects",
-        "Change the accent color across the whole site"
-      ],
-      "type": "bullet-list",
-      "visible": true
-    },
-    {
-      "id": "example-suggestions-heading",
-      "level": 3,
-      "text": "Try one of these right now",
-      "type": "heading",
-      "visible": true
-    },
-    {
-      "id": "try-suggestions",
-      "items": [
-        "\"Rewrite the opening paragraph for a non-technical audience\"",
-        "\"Add a section about what happens when a suggestion is rejected\"",
-        "\"Merge the two safety sections into one\"",
-        "\"Change the 3D shape from a Dodecahedron to a TorusKnot\"",
-        "\"Add a second orbiting object to the 3D scene\"",
-        "\"Change the accent color to a warm amber\"",
-        "\"Split this bullet list into two columns with headings\""
-      ],
-      "type": "bullet-list",
-      "visible": true
-    },
-    {
-      "body": "You're not reading about a system that edits pages — you're on the page it edits. Hover any element, click the icon, and submit a suggestion. The pipeline runs, a PR opens, CI checks it, Vercel deploys it, and the page updates. The whole chain is real and traceable.",
-      "id": "try-callout",
-      "title": "This page is the demo",
-      "tone": "success",
-      "type": "callout",
-      "visible": true
-    },
-    {
       "id": "pipeline-workflow",
       "steps": [
         {
@@ -340,6 +238,31 @@
         }
       ],
       "type": "tech-stack",
+      "visible": true
+    },
+    {
+      "id": "try-heading",
+      "level": 2,
+      "text": "Try it yourself",
+      "type": "heading",
+      "visible": true
+    },
+    {
+      "id": "how-to-use",
+      "text": "Hover any element on this page — a small icon appears in the corner. Click it, type a suggestion in plain English, and submit. The pipeline runs in the background; the page updates itself when the deploy lands.",
+      "type": "paragraph",
+      "visible": true
+    },
+    {
+      "id": "try-suggestions",
+      "items": [
+        "\"Rewrite the opening paragraph for a non-technical audience\"",
+        "\"Add a section about what happens when a suggestion is rejected\"",
+        "\"Merge the two safety sections into one\"",
+        "\"Change the 3D shape from a Dodecahedron to a TorusKnot\"",
+        "\"Add a second orbiting object to the 3D scene\""
+      ],
+      "type": "bullet-list",
       "visible": true
     },
     {
