@@ -10,12 +10,37 @@ import { z } from 'zod'
 // The discriminated union is the safety mechanism: the type literal forces
 // the exact field set. The validator catches bad patches before any commit.
 
+// ---------------------------------------------------------------------------
+// Animation schema
+// ---------------------------------------------------------------------------
+// Optional entrance animation applied to every section by the Framer Motion
+// wrapper. The agent edits preset, duration, and delay — it never writes
+// animation code. Defaults to fade-up when the field is absent.
+
+export const AnimationPresets = [
+  'fade-up',
+  'fade-in',
+  'slide-left',
+  'slide-right',
+  'zoom-in',
+  'none',
+] as const
+
+export const AnimationSchema = z.object({
+  preset: z.enum(AnimationPresets).default('fade-up'),
+  duration: z.number().min(0.1).max(2).optional(),
+  delay: z.number().min(0).max(2).optional(),
+}).optional()
+
+export type AnimationConfig = z.infer<typeof AnimationSchema>
+
 const SectionBaseSchema = z.object({
   id: z
     .string()
     .min(1)
     .regex(/^[a-z0-9-]+$/, 'id must be lowercase kebab-case e.g. intro-paragraph'),
   visible: z.boolean().default(true),
+  animation: AnimationSchema,
 })
 
 const HeadingSchema = SectionBaseSchema.extend({
@@ -238,7 +263,13 @@ export const UpdateSectionsTool = {
     '  Each object: id, geometry {type, params[]}, material {type, color, wireframe, roughness, metalness}, position[x,y,z], scale, animation {rotate[x,y,z], float {amplitude, speed}}\n' +
     '  Geometry types: Box, Sphere, Torus, TorusKnot, Icosahedron, Octahedron, Cone, Cylinder, Dodecahedron, Tetrahedron\n' +
     '  Material types: MeshStandardMaterial, MeshPhysicalMaterial, MeshNormalMaterial, MeshBasicMaterial\n' +
-    '  Light types: AmbientLight {intensity, color}, PointLight {intensity, position, color}, DirectionalLight {intensity, position, color}',
+    '  Light types: AmbientLight {intensity, color}, PointLight {intensity, position, color}, DirectionalLight {intensity, position, color}\n\n' +
+    'ANIMATION (optional field on every section):\n' +
+    'Each section accepts an optional "animation" field that controls its scroll-triggered entrance animation.\n' +
+    'Fields: preset ("fade-up"|"fade-in"|"slide-left"|"slide-right"|"zoom-in"|"none"), duration (seconds, 0.1–2, default 0.5), delay (seconds, 0–2, default 0).\n' +
+    'Omitting the animation field uses the default (fade-up, 0.5s). Set preset "none" to disable animation on a section.\n' +
+    'Example: { "animation": { "preset": "slide-left", "duration": 0.6, "delay": 0.1 } }\n' +
+    'Use this when a suggestion asks to animate, speed up, slow down, or remove animation from a section.',
   input_schema: {
     type: 'object' as const,
     properties: {

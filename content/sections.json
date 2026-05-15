@@ -8,6 +8,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-up",
+        "duration": 0.6
+      },
       "id": "elevator-pitch",
       "text": "Any visitor can suggest a change to this page. An AI moderates the suggestion, a second AI generates the edit, and the result becomes a real GitHub pull request that CI checks, auto-merges, and Vercel deploys — all within 30–90 seconds. No human in the loop.",
       "type": "paragraph",
@@ -119,6 +123,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "zoom-in",
+        "duration": 0.6
+      },
       "id": "pipeline-stats",
       "stats": [
         {
@@ -142,6 +150,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-up",
+        "duration": 0.6
+      },
       "id": "pipeline-workflow",
       "steps": [
         {
@@ -169,6 +181,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "slide-left",
+        "duration": 0.55
+      },
       "body": "A GitHub Actions workflow blocks any pull request that touches files outside a strict allowlist (content/, theme/). This check runs on GitHub's infrastructure, independent of the agent pipeline — the CI wall is enforced at the repository level, not inside the AI models.",
       "id": "safety-callout",
       "title": "The agent cannot break the site",
@@ -177,6 +193,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-in",
+        "duration": 0.4
+      },
       "id": "safety-layers-heading",
       "level": 3,
       "text": "Other independent safety layers",
@@ -184,6 +204,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-up",
+        "delay": 0.1
+      },
       "id": "safety-layers-list",
       "items": [
         "Zod schema validation — bad shapes, missing fields, and out-of-range values are caught before any commit",
@@ -196,6 +220,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "slide-left",
+        "duration": 0.55
+      },
       "body": "The agent can rewrite text, split or merge sections, reorder the page, add new typed sections, or hide existing ones. It cannot write arbitrary HTML, invent new section types, or touch application code. Output is validated against strict Zod schemas before any commit.",
       "id": "agent-scope",
       "title": "What the agent can and cannot do",
@@ -204,6 +232,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-up",
+        "duration": 0.5
+      },
       "id": "tech-stack",
       "items": [
         {
@@ -241,6 +273,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-in",
+        "duration": 0.5
+      },
       "id": "try-heading",
       "level": 2,
       "text": "Try it yourself",
@@ -248,12 +284,19 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-up"
+      },
       "id": "how-to-use",
       "text": "Hover any element on this page — a small icon appears in the corner. Click it, type a suggestion in plain English, and submit. The pipeline runs in the background; the page updates itself when the deploy lands.",
       "type": "paragraph",
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-up",
+        "delay": 0.1
+      },
       "id": "try-suggestions",
       "items": [
         "\"Rewrite the opening paragraph for a non-technical audience\"",
@@ -266,12 +309,18 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-in"
+      },
       "id": "commit-context",
       "text": "Every agent-opened pull request follows a consistent commit format so agent changes are easy to spot in the git history:",
       "type": "paragraph",
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-up"
+      },
       "code": "agent(elevator-pitch): rewrite opening paragraph to active voice",
       "id": "commit-format",
       "language": "bash",
@@ -279,6 +328,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-in",
+        "duration": 0.8
+      },
       "attribution": "docs/system-reference.md",
       "id": "capability-quote",
       "text": "Every change has a real GitHub PR, real CI, and a real deploy — because real work is happening at each step.",
@@ -286,6 +339,11 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "fade-in",
+        "duration": 0.8,
+        "delay": 0.15
+      },
       "attribution": "docs/system-reference.md",
       "id": "closing-quote",
       "text": "The thing is interesting because it's real, not because it claims to be.",
@@ -293,6 +351,10 @@
       "visible": true
     },
     {
+      "animation": {
+        "preset": "zoom-in",
+        "duration": 0.5
+      },
       "href": "https://github.com/Hollin-A/the-page-that-edits-itself/pulls",
       "id": "see-prs",
       "text": "Every change has a real pull request →",

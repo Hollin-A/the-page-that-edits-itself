@@ -26,6 +26,14 @@ A suggestion can ask the agent to:
 - **Remove** a section
 - **Change** a section's type (paragraph → callout, etc.)
 - **Hide or show** a section via its `visible` field
+- **Animate** a section's entrance — change its scroll-triggered animation preset, speed, or delay
+
+Every section accepts an optional `animation` field:
+```json
+{ "animation": { "preset": "fade-up", "duration": 0.5, "delay": 0 } }
+```
+Available presets: `fade-up`, `fade-in`, `slide-left`, `slide-right`, `zoom-in`, `none`.
+Omitting the field defaults to `fade-up`. Use `"none"` to disable animation on a section.
 
 The agent **cannot** invent new section types, add fields to the schema, or modify any code. The renderer registry is hardcoded; the agent only manipulates structured data that registered components know how to render.
 
