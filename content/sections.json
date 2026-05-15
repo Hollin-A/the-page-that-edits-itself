@@ -9,8 +9,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.6
+        "duration": 0.6,
+        "preset": "fade-up"
       },
       "id": "elevator-pitch",
       "text": "Any visitor can suggest a change to this page. An AI moderates the suggestion, a second AI generates the edit, and the result becomes a real GitHub pull request that CI checks, auto-merges, and Vercel deploys — all within 30–90 seconds. No human in the loop.",
@@ -110,14 +110,46 @@
           "material": {
             "color": "#ffffff",
             "type": "MeshBasicMaterial",
-            "wireframe": false
+            "wireframe": true
           },
           "position": [
             0,
             0,
             0
           ],
-          "scale": 1.002
+          "scale": 1.01
+        },
+        {
+          "animation": {
+            "float": {
+              "amplitude": 0.12,
+              "speed": 0.8
+            },
+            "rotate": [
+              0.002,
+              0.006,
+              0.001
+            ]
+          },
+          "geometry": {
+            "params": [
+              1.4
+            ],
+            "type": "Dodecahedron"
+          },
+          "id": "main-diamond-emboss",
+          "material": {
+            "color": "#e0f7ff",
+            "metalness": 1,
+            "roughness": 0,
+            "type": "MeshPhysicalMaterial"
+          },
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1.025
         }
       ],
       "type": "threejs-scene",
@@ -125,8 +157,8 @@
     },
     {
       "animation": {
-        "preset": "zoom-in",
-        "duration": 0.6
+        "duration": 0.6,
+        "preset": "zoom-in"
       },
       "id": "pipeline-stats",
       "stats": [
@@ -152,8 +184,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.6
+        "duration": 0.6,
+        "preset": "fade-up"
       },
       "id": "pipeline-workflow",
       "steps": [
@@ -183,8 +215,8 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "fade-in"
       },
       "id": "try-heading",
       "level": 2,
@@ -194,8 +226,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "fade-up"
       },
       "id": "threejs-invite",
       "text": "The 3D shape on the right is editable too — try suggesting a different geometry, color, material, or animation. Even the accent color running through the whole site is fair game.",
@@ -213,8 +245,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "delay": 0.1
+        "delay": 0.1,
+        "preset": "fade-up"
       },
       "id": "try-suggestions",
       "items": [
@@ -239,8 +271,8 @@
     },
     {
       "animation": {
-        "preset": "slide-left",
-        "duration": 0.55
+        "duration": 0.55,
+        "preset": "slide-left"
       },
       "body": "A suggestion is rejected if it's off-topic, potentially harmful, or outside the agent's scope. Claude Haiku reviews every submission first, so rejections are fast. If your suggestion fails, try rephrasing it as a structural edit — rewrite this section, add a section about X, change the 3D shape.",
       "id": "rejected-explanation",
@@ -251,8 +283,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.55
+        "duration": 0.55,
+        "preset": "fade-up"
       },
       "body": "A GitHub Actions workflow checks every agent pull request against a strict allowlist. Only content/ and theme/ files can be touched — no application code, no config files. The check runs on GitHub's infrastructure, independent of the AI pipeline.",
       "id": "safety-callout",
@@ -263,8 +295,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "fade-up"
       },
       "body": "The agent can rewrite text, split or merge sections, reorder the page, change animation presets, and adjust the 3D scene. It cannot write HTML, invent new section types, or touch application code. What you see on this page is everything the agent can change.",
       "id": "agent-scope",
@@ -275,8 +307,8 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
-        "duration": 0.4
+        "duration": 0.4,
+        "preset": "fade-in"
       },
       "id": "for-developers-heading",
       "level": 2,
@@ -286,8 +318,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "delay": 0.1
+        "delay": 0.1,
+        "preset": "fade-up"
       },
       "id": "safety-layers-list",
       "items": [
@@ -302,8 +334,8 @@
     },
     {
       "animation": {
-        "preset": "fade-up",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "fade-up"
       },
       "id": "tech-stack",
       "items": [
@@ -371,8 +403,8 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
-        "duration": 0.8
+        "duration": 0.8,
+        "preset": "fade-in"
       },
       "attribution": "— on what makes this different from a database",
       "id": "capability-quote",
@@ -382,9 +414,9 @@
     },
     {
       "animation": {
-        "preset": "fade-in",
+        "delay": 0.15,
         "duration": 0.8,
-        "delay": 0.15
+        "preset": "fade-in"
       },
       "attribution": "— guiding principle",
       "id": "closing-quote",
@@ -394,8 +426,8 @@
     },
     {
       "animation": {
-        "preset": "zoom-in",
-        "duration": 0.5
+        "duration": 0.5,
+        "preset": "zoom-in"
       },
       "href": "https://github.com/Hollin-A/the-page-that-edits-itself/pulls",
       "id": "see-prs",
@@ -405,9 +437,9 @@
     },
     {
       "animation": {
-        "preset": "zoom-in",
+        "delay": 0.1,
         "duration": 0.5,
-        "delay": 0.1
+        "preset": "zoom-in"
       },
       "href": "https://github.com/Hollin-A/the-page-that-edits-itself",
       "id": "repo-link",
