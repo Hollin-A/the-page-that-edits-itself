@@ -46,8 +46,8 @@ export default async function AdminPage() {
   return (
     <div className="max-w-5xl space-y-8">
       <div>
-        <h1 className="text-lg font-semibold text-neutral-900">Overview</h1>
-        <p className="text-xs text-neutral-400 mt-0.5">
+        <h1 className="text-lg font-semibold text-white/85">Overview</h1>
+        <p className="text-xs text-white/35 mt-0.5">
           Signed in as {session.user.email}
         </p>
       </div>

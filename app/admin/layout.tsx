@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <aside className="w-60 shrink-0 bg-[#14141A] text-white flex flex-col min-h-screen fixed top-0 left-0 h-full">
         <div className="px-5 py-5 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold tracking-tight">Proto</span>
+            <span className="text-sm font-semibold tracking-tight">the-page</span>
             <span className="text-[10px] font-bold bg-white/10 text-white/60 px-1.5 py-0.5 rounded tracking-widest uppercase">
               OPS
             </span>
