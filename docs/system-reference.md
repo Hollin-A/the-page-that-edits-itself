@@ -14,7 +14,7 @@ This is a marketing site that any visitor can edit. Suggested changes are review
 
 ## What's editable
 
-The page is built from an array of typed sections stored in `content/sections.json`. Each section has a type (paragraph, heading, callout, code block, list, link, quote, diagram, etc.), an id, and typed content fields.
+The page is built from an array of typed sections stored in `content/sections.json`. Each section has a type, an id, and typed content fields. The twelve section types are: `heading`, `paragraph`, `callout`, `ordered-list`, `bullet-list`, `code-block`, `link-block`, `quote`, `threejs-scene`, `workflow`, `stat-row`, `tech-stack`.
 
 A suggestion can ask the agent to:
 
@@ -43,7 +43,9 @@ Theme tokens (accent color, optional effects from a fixed catalog) are editable 
 
 ## The pipeline (what happens after you submit a suggestion)
 
-1. **Submit** — The comment is posted to `/api/comment` with the `edit_id` of the section being targeted and the suggestion text. The IP is hashed (SHA-256) and rate-limited. A row is inserted to Supabase with status `queued`. An event is sent to Inngest.
+The `edit_id` passed with each submission is prefixed by target type: sections use `section.{id}` (e.g. `section.elevator-pitch`) and the theme accent uses `theme.accent`.
+
+1. **Submit** — The comment is posted to `/api/comment` with the `edit_id` of the element being targeted and the suggestion text. The IP is hashed (SHA-256) and rate-limited. A row is inserted to Supabase with status `queued`. An event is sent to Inngest.
 
 2. **Load** — The Inngest function loads the comment row.
 
@@ -51,21 +53,23 @@ Theme tokens (accent color, optional effects from a fixed catalog) are editable 
 
 4. **Moderate** — Claude Haiku reads the suggestion and returns a verdict: `safe`, `unsafe`, or `off-topic`. Anything not `safe` is rejected at this step.
 
-5. **Generate** — Claude Sonnet receives the current content, the target `edit_id`, and the suggestion. It returns a structured patch by calling the `update_sections` tool (or the equivalent for theme).
+5. **Classify scope** — A second Claude Haiku call classifies the suggestion as `section` (targets the clicked element only) or `global` (targets the whole page). This determines how much context is shown to Sonnet in the next step.
 
-6. **Validate** — The patch is run through the relevant Zod schema. Invalid patches throw and the comment is marked `failed`.
+6. **Generate** — Claude Sonnet receives the current content, the target `edit_id`, and the suggestion. For section-scope suggestions, the target element is marked `TARGET SECTION` and all others are marked read-only. It returns a structured patch by calling the `update_sections` tool (or the equivalent for theme).
 
-7. **(Held comments only)** — If the suggestion meets hold conditions (low agent confidence, require_approval enabled, etc.), the patch is saved and the comment marked `held`. The owner reviews it in the admin panel. On approval, the pipeline re-generates from the current file state to avoid stale-patch merge conflicts.
+7. **Validate** — The patch is run through the relevant Zod schema. Invalid patches throw and the comment is marked `failed`.
 
-8. **Commit and open PR** — Octokit creates a branch, writes the patched file, opens a PR with a commit message in the format `agent(edit_id): description`. Auto-merge is enabled.
+8. **(Held comments only)** — If `require_approval` is enabled in admin settings, the patch is saved and the comment marked `held`. The owner reviews it in the admin panel. On approval, the pipeline re-generates from the current file state to avoid stale-patch merge conflicts.
 
-9. **CI** — A GitHub Actions workflow checks every changed file against an allowlist (`content/`, `theme/`, `overrides/`). Any file outside the allowlist blocks the merge. This is the safety wall: the agent literally cannot modify application code, no matter what.
+9. **Commit and open PR** — Octokit creates a branch, writes the patched file, opens a PR with a commit message in the format `agent(edit_id): description`. Auto-merge is enabled.
 
-10. **Merge** — If CI passes, GitHub auto-merges.
+10. **CI** — A GitHub Actions workflow checks every changed file against an exact allowlist (`content/sections.json` and `theme/tokens.json`). Any file outside the allowlist blocks the merge. This is the safety wall: the agent literally cannot modify application code, no matter what.
 
-11. **Deploy** — Vercel rebuilds on the merge. ISR refreshes the public page within 60 seconds.
+11. **Merge** — If CI passes, GitHub auto-merges.
 
-12. **Mark merged** — The comment row is updated to `merged` with the PR URL and the agent's reasoning.
+12. **Deploy** — Vercel rebuilds on the merge. ISR refreshes the public page within 60 seconds.
+
+13. **Mark merged** — The comment row is updated to `merged` with the PR URL and the agent's reasoning.
 
 ---
 
@@ -87,7 +91,7 @@ Theme tokens (accent color, optional effects from a fixed catalog) are editable 
 
 There are several independent walls. A failure in any one does not compromise the others.
 
-1. **Rate limiting** — 3 submissions per hour for anonymous users (if anonymous is enabled), 20 per hour for GitHub-authenticated users. Tracked by hashed IP.
+1. **Rate limiting** — Anonymous users are limited by the `RATE_LIMIT_PER_HOUR` environment variable (default: 3 per hour). GitHub-authenticated users get 20 per hour. Tracked by hashed IP. Rate limiting is skipped entirely in development (`NODE_ENV !== 'production'`).
 
 2. **AI moderation gate** — Every suggestion passes through Haiku before any Sonnet call. Off-topic and unsafe content is rejected cheaply, before the expensive generation step.
 
@@ -101,7 +105,7 @@ There are several independent walls. A failure in any one does not compromise th
 
 7. **Anthropic spend cap** — A monthly hard limit set in the Anthropic console. When the cap is reached, the API returns errors and the pipeline marks comments `failed`. The financial ceiling is fixed regardless of traffic.
 
-8. **Held-comment queue** — Optional human approval step for low-confidence agent outputs or sensitive edits. The owner reviews and approves; the patch is re-generated against current state on approval to avoid stale-patch merge issues.
+8. **Held-comment queue** — Optional human approval step enabled by the `require_approval` admin setting. When active, every suggestion is held before the PR is opened. The owner reviews and approves; the patch is re-generated against current state on approval to avoid stale-patch merge issues.
 
 ---
 

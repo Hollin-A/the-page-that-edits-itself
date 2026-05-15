@@ -296,6 +296,10 @@ export const UpdateSectionsTool = {
                 'code-block',
                 'link-block',
                 'quote',
+                'threejs-scene',
+                'workflow',
+                'stat-row',
+                'tech-stack',
               ],
             },
             visible: {

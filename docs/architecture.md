@@ -16,7 +16,7 @@ Anything without an `id` is intentionally not editable.
 
 ## Section model
 
-The page is a single ordered array of typed sections. Eight types are available:
+The page is a single ordered array of typed sections. Twelve types are available:
 
 | Type | Fields |
 |---|---|
@@ -28,8 +28,12 @@ The page is a single ordered array of typed sections. Eight types are available:
 | `code-block` | `language`, `code` |
 | `link-block` | `text`, `href` |
 | `quote` | `text`, `attribution` |
+| `threejs-scene` | `height`, `camera`, `lights[]`, `objects[]` |
+| `workflow` | `steps[]` (each with `title`, `description`) |
+| `stat-row` | `stats[]` (each with `value`, `label`) |
+| `tech-stack` | `items[]` (each with `name`, `description`, optional `href`) |
 
-Each section also has `id` (kebab-case) and `visible` (boolean). The agent returns the complete sections array on every edit — never a diff. A Zod discriminated union validates the shape before any commit.
+Each section also has `id` (kebab-case), `visible` (boolean), and an optional `animation` field (`{ preset, duration, delay }`). The agent returns the complete sections array on every edit — never a diff. A Zod discriminated union validates the shape before any commit.
 
 ## Agent pipeline
 
@@ -73,12 +77,14 @@ Step 5 classifies every suggestion before passing it to Sonnet. This prevents "m
 
 ## CI allowlist (safety wall)
 
-A GitHub Actions workflow runs on all PRs from `agent/*` branches and rejects any change that touches a file outside:
+A GitHub Actions workflow runs on all PRs from `agent/*` branches and rejects any change that touches a file outside the exact allowlist:
 
 ```
 content/sections.json
 theme/tokens.json
 ```
+
+The check uses exact file path matching — subdirectories or other files in `content/` or `theme/` are not permitted.
 
 Human dev PRs (`feat/*`, `fix/*`, etc.) skip the check entirely. The agent literally cannot modify application code — this check runs on GitHub's infrastructure, not inside the pipeline.
 
