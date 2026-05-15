@@ -9,6 +9,20 @@ import type { ThreeJsSceneSection } from '@/lib/schemas'
 type ObjectConfig = ThreeJsSceneSection['objects'][number]
 type LightConfig = ThreeJsSceneSection['lights'][number]
 
+// Resolve the special "accent" sentinel to the live CSS variable value.
+// Falls back to a safe cyan if the variable isn't available yet.
+function resolveColor(color: string | undefined): string {
+  if (!color || color === 'accent') {
+    if (typeof document !== 'undefined') {
+      return getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent')
+        .trim() || '#00EFFF'
+    }
+    return '#00EFFF'
+  }
+  return color
+}
+
 function SceneMesh({ object }: { object: ObjectConfig }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const baseY = object.position?.[1] ?? 0
@@ -49,7 +63,7 @@ function SceneMesh({ object }: { object: ObjectConfig }) {
 
       {mat.type === 'MeshStandardMaterial' && (
         <meshStandardMaterial
-          color={mat.color ?? '#ffffff'}
+          color={resolveColor(mat.color)}
           wireframe={mat.wireframe ?? false}
           roughness={mat.roughness ?? 0.4}
           metalness={mat.metalness ?? 0.6}
@@ -59,7 +73,7 @@ function SceneMesh({ object }: { object: ObjectConfig }) {
       )}
       {mat.type === 'MeshPhysicalMaterial' && (
         <meshPhysicalMaterial
-          color={mat.color ?? '#ffffff'}
+          color={resolveColor(mat.color)}
           wireframe={mat.wireframe ?? false}
           roughness={mat.roughness ?? 0.2}
           metalness={mat.metalness ?? 0.8}
@@ -72,7 +86,7 @@ function SceneMesh({ object }: { object: ObjectConfig }) {
       )}
       {mat.type === 'MeshBasicMaterial' && (
         <meshBasicMaterial
-          color={mat.color ?? '#ffffff'}
+          color={resolveColor(mat.color)}
           wireframe={mat.wireframe ?? true}
           transparent={mat.transparent ?? (mat.opacity !== undefined && mat.opacity < 1)}
           opacity={mat.opacity ?? 1}

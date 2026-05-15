@@ -75,7 +75,7 @@
           },
           "id": "main-diamond",
           "material": {
-            "color": "#00EFFF",
+            "color": "accent",
             "metalness": 0.6,
             "roughness": 0.05,
             "type": "MeshPhysicalMaterial"

@@ -71,7 +71,10 @@ export default function Page() {
               style={{ minHeight: `${heroScene?.height ?? 420}px` }}
             >
               <EditableElement editId={`section.${heroHeading.id}`} tag="div">
-                <h1 className="text-4xl sm:text-5xl xl:text-[4rem] font-bold tracking-tight text-white leading-[1.08]">
+                <h1
+                  className="text-4xl sm:text-5xl xl:text-[4rem] font-bold tracking-tight leading-[1.08]"
+                  style={{ color: 'var(--accent)' }}
+                >
                   {heroHeading.text}
                 </h1>
               </EditableElement>
