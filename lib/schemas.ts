@@ -172,10 +172,7 @@ const ThreeJsObjectSchema = z.object({
   material: z.object({
     type: z.enum(['MeshStandardMaterial', 'MeshPhysicalMaterial',
       'MeshNormalMaterial', 'MeshBasicMaterial']),
-    color: z.union([
-      z.string().regex(/^#[0-9A-Fa-f]{6}$/),
-      z.literal('accent'),
-    ]).optional(),
+    color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
     wireframe: z.boolean().optional(),
     roughness: z.number().min(0).max(1).optional(),
     metalness: z.number().min(0).max(1).optional(),
@@ -263,7 +260,7 @@ export const UpdateSectionsTool = {
     '- stat-row: stats[] (each with value (max 20) and label (max 60), 2–6 stats)\n' +
     '- tech-stack: items[] (each with name (max 40), description (max 120), optional href URL, 1–12 items)\n' +
     '- threejs-scene: height (px, 100-800), camera {fov, position[x,y,z]}, lights[], objects[]\n' +
-    '  Each object: id, geometry {type, params[]}, material {type, color (hex OR "accent" to follow site accent color), wireframe, roughness, metalness}, position[x,y,z], scale, animation {rotate[x,y,z], float {amplitude, speed}}\n' +
+    '  Each object: id, geometry {type, params[]}, material {type, color, wireframe, roughness, metalness}, position[x,y,z], scale, animation {rotate[x,y,z], float {amplitude, speed}}\n' +
     '  Geometry types: Box, Sphere, Torus, TorusKnot, Icosahedron, Octahedron, Cone, Cylinder, Dodecahedron, Tetrahedron\n' +
     '  Material types: MeshStandardMaterial, MeshPhysicalMaterial, MeshNormalMaterial, MeshBasicMaterial\n' +
     '  Light types: AmbientLight {intensity, color}, PointLight {intensity, position, color}, DirectionalLight {intensity, position, color}\n\n' +

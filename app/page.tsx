@@ -2,7 +2,6 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import EditableElement from '@/components/EditableElement'
 import AnimatedSection from '@/components/AnimatedSection'
-import { AccentProvider } from '@/components/AccentProvider'
 import { SECTION_RENDERERS } from '@/components/sections/registry'
 import ContributorsSection from '@/components/ContributorsSection'
 import type { ThemeTokens, SectionsFile, ThreeJsSceneSection } from '@/lib/schemas'
@@ -46,7 +45,6 @@ export default function Page() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[400px] rounded-full blur-[120px] opacity-[0.04] bg-cyan-500" />
       </div>
 
-      <AccentProvider accent={tokens.accent}>
       <div className="relative min-h-screen flex flex-col overflow-x-hidden">
 
         {/* ── Nav ── */}
@@ -124,7 +122,6 @@ export default function Page() {
         <ContributorsSection />
 
       </div>
-      </AccentProvider>
     </>
   )
 }

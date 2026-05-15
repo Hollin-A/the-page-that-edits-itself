@@ -5,20 +5,13 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import type { ThreeJsSceneSection } from '@/lib/schemas'
-import { useAccent } from '@/components/AccentProvider'
 
 type ObjectConfig = ThreeJsSceneSection['objects'][number]
 type LightConfig = ThreeJsSceneSection['lights'][number]
 
 function SceneMesh({ object }: { object: ObjectConfig }) {
-  const accent = useAccent()
   const meshRef = useRef<THREE.Mesh>(null)
   const baseY = object.position?.[1] ?? 0
-
-  function resolveColor(color: string | undefined): string {
-    if (!color || color === 'accent') return accent
-    return color
-  }
 
   useFrame((state, delta) => {
     if (!meshRef.current) return
@@ -56,7 +49,7 @@ function SceneMesh({ object }: { object: ObjectConfig }) {
 
       {mat.type === 'MeshStandardMaterial' && (
         <meshStandardMaterial
-          color={resolveColor(mat.color)}
+          color={mat.color ?? '#ffffff'}
           wireframe={mat.wireframe ?? false}
           roughness={mat.roughness ?? 0.4}
           metalness={mat.metalness ?? 0.6}
@@ -66,7 +59,7 @@ function SceneMesh({ object }: { object: ObjectConfig }) {
       )}
       {mat.type === 'MeshPhysicalMaterial' && (
         <meshPhysicalMaterial
-          color={resolveColor(mat.color)}
+          color={mat.color ?? '#ffffff'}
           wireframe={mat.wireframe ?? false}
           roughness={mat.roughness ?? 0.2}
           metalness={mat.metalness ?? 0.8}
@@ -79,7 +72,7 @@ function SceneMesh({ object }: { object: ObjectConfig }) {
       )}
       {mat.type === 'MeshBasicMaterial' && (
         <meshBasicMaterial
-          color={resolveColor(mat.color)}
+          color={mat.color ?? '#ffffff'}
           wireframe={mat.wireframe ?? true}
           transparent={mat.transparent ?? (mat.opacity !== undefined && mat.opacity < 1)}
           opacity={mat.opacity ?? 1}
